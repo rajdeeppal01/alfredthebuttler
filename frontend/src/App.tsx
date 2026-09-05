@@ -41,6 +41,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [lastTranscript, setLastTranscript] = useState('');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -129,10 +130,12 @@ function App() {
 
     recognition.onstart = () => {
       setIsListening(true);
+      setLastTranscript('');
     };
 
     recognition.onresult = async (event: any) => {
       const transcript = event.results[0][0].transcript;
+      setLastTranscript(transcript);
       setIsListening(false);
       setIsGenerating(true);
       
@@ -140,7 +143,10 @@ function App() {
         const res = await fetch(`${API_URL}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: transcript })
+          body: JSON.stringify({ 
+            text: transcript,
+            context: { chores, emails, github, obsidian }
+          })
         });
         
         const data = await res.json();
@@ -276,6 +282,13 @@ function App() {
             </button>
           </div>
         </header>
+
+        {lastTranscript && (
+          <div style={{ textAlign: 'center', marginBottom: '30px', padding: '15px', background: 'rgba(20, 20, 20, 0.6)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span style={{ color: '#888', marginRight: '10px' }}>Alfred heard:</span>
+            <strong style={{ fontSize: '18px' }}>"{lastTranscript}"</strong>
+          </div>
+        )}
 
         <div className="dashboard-grid">
           {/* Chores Panel */}

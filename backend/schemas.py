@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional, Dict, Any
 
 class ChoreBase(BaseModel):
     title: str
@@ -19,3 +20,4 @@ class NoteCreate(BaseModel):
 
 class ChatRequest(BaseModel):
     text: str
+    context: Optional[Dict[str, Any]] = None

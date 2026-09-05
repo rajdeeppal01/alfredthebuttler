@@ -115,7 +115,7 @@ async def play_voice(text: str):
 def handle_chat(req: schemas.ChatRequest):
     from integrations.ai import process_voice_command
     
-    intent = process_voice_command(req.text)
+    intent = process_voice_command(req.text, req.context)
     action = intent.get("action", "none")
     response_text = intent.get("response", "I have processed your command.")
     
