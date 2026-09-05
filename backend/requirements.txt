@@ -2,7 +2,6 @@ fastapi
 uvicorn[standard]
 pydantic
 firebase-admin
-keyboard
 edge-tts
 python-dotenv
 linkedin-api

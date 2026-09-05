@@ -21,10 +21,14 @@ firebase_env = os.getenv("FIREBASE_SERVICE_ACCOUNT")
 db = None
 
 if firebase_env:
-    if not firebase_admin._apps:
-        cred = credentials.Certificate(json.loads(firebase_env))
-        firebase_admin.initialize_app(cred)
-    db = firestore.client()
+    try:
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(json.loads(firebase_env))
+            firebase_admin.initialize_app(cred)
+        db = firestore.client()
+    except Exception as e:
+        print(f"Firebase Init Error: {e}")
+        db = None
 else:
     cred_path = os.path.join(os.path.dirname(__file__), 'firebase_credentials.json')
     if os.path.exists(cred_path):
