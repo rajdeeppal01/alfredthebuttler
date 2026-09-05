@@ -13,6 +13,7 @@ from integrations.gmail import get_unread_emails
 from integrations.github import get_github_notifications
 from integrations.obsidian import get_recent_obsidian_notes, create_obsidian_note
 from integrations.voice import generate_audio_stream
+from integrations.ai import process_voice_command
 
 import json
 
@@ -109,6 +110,36 @@ def add_obsidian_note(note: schemas.NoteCreate):
 async def play_voice(text: str):
     audio_bytes = await generate_audio_stream(text)
     return Response(content=audio_bytes, media_type="audio/mpeg")
+
+@app.post("/chat")
+def handle_chat(req: schemas.ChatRequest):
+    from integrations.ai import process_voice_command
+    
+    intent = process_voice_command(req.text)
+    action = intent.get("action", "none")
+    response_text = intent.get("response", "I have processed your command.")
+    
+    if action == "add_chore":
+        title = intent.get("title")
+        if title:
+            create_chore(schemas.ChoreCreate(title=title))
+            
+    elif action == "delete_chore":
+        title = intent.get("title", "").lower()
+        if title and db:
+            docs = db.collection("chores").stream()
+            for doc in docs:
+                # Basic string match
+                if title in doc.to_dict().get("title", "").lower():
+                    db.collection("chores").document(doc.id).delete()
+                    break
+
+    elif action == "add_note":
+        title = intent.get("title", "Voice Note")
+        content = intent.get("content", "")
+        create_obsidian_note(title, content)
+        
+    return {"response": response_text, "action": action}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

@@ -16,3 +16,6 @@ class Chore(ChoreBase):
 class NoteCreate(BaseModel):
     title: str
     content: str
+
+class ChatRequest(BaseModel):
+    text: str
