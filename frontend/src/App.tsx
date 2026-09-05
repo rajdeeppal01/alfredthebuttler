@@ -42,6 +42,7 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [chatInput, setChatInput] = useState('');
+  const [chatResponse, setChatResponse] = useState('');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -155,6 +156,7 @@ function App() {
     if (!chatInput.trim()) return;
     
     setIsGenerating(true);
+    setChatResponse('');
     const textToSend = chatInput;
     setChatInput('');
     
@@ -168,7 +170,14 @@ function App() {
         })
       });
       
+      if (!res.ok) {
+        setChatResponse(`Server Error: ${res.status}. Please check Vercel logs.`);
+        setIsGenerating(false);
+        return;
+      }
+      
       const data = await res.json();
+      setChatResponse(data.response);
       
       fetchData(); // Refresh UI to show any changes
       
@@ -183,11 +192,14 @@ function App() {
       
       audio.onended = () => setIsPlaying(false);
       audio.onerror = () => {
+        // Audio failed, but we still show the text!
+        console.error("Audio playback failed");
         setIsGenerating(false);
         setIsPlaying(false);
       };
     } catch (e) {
       console.error(e);
+      setChatResponse(`Network Error. Could not reach the server.`);
       setIsGenerating(false);
     }
   };
@@ -290,7 +302,7 @@ function App() {
           </div>
         </header>
 
-        <form onSubmit={submitChat} style={{ display: 'flex', gap: '10px', marginBottom: '30px', padding: '15px', background: 'rgba(20, 20, 20, 0.6)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <form onSubmit={submitChat} style={{ display: 'flex', gap: '10px', marginBottom: chatResponse ? '15px' : '30px', padding: '15px', background: 'rgba(20, 20, 20, 0.6)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
           <input 
             value={chatInput} 
             onChange={(e) => setChatInput(e.target.value)} 
@@ -301,6 +313,13 @@ function App() {
             Send
           </button>
         </form>
+
+        {chatResponse && (
+          <div style={{ textAlign: 'center', marginBottom: '30px', padding: '15px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '16px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+            <span style={{ color: '#3b82f6', marginRight: '10px', fontWeight: 'bold' }}>Alfred says:</span>
+            <strong style={{ fontSize: '18px', color: 'white' }}>{chatResponse}</strong>
+          </div>
+        )}
 
         <div className="dashboard-grid">
           {/* Chores Panel */}
