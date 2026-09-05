@@ -3,7 +3,7 @@ import './App.css';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsConditions from './TermsConditions';
 // @ts-ignore
-import Antigravity from '@/components/Antigravity';
+import Particles from './components/Particles';
 
 interface Chore {
   id: string;
@@ -263,22 +263,16 @@ function App() {
   return (
     <>
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1 }}>
-        <Antigravity
-          count={300}
-          magnetRadius={10}
-          ringRadius={10}
-          waveSpeed={0.4}
-          waveAmplitude={1}
-          particleSize={2}
-          lerpSpeed={0.1}
-          color="#3b82f6"
-          autoAnimate={false}
-          particleVariance={1}
-          rotationSpeed={0}
-          depthFactor={1}
-          pulseSpeed={3}
-          particleShape="capsule"
-          fieldStrength={10}
+        <Particles
+          particleColors={["#ffffff"]}
+          particleCount={200}
+          particleSpread={10}
+          speed={0.1}
+          particleBaseSize={100}
+          moveParticlesOnHover={true}
+          alphaParticles={false}
+          disableRotation={false}
+          pixelRatio={1}
         />
       </div>
       
