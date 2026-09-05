@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsConditions from './TermsConditions';
@@ -106,7 +106,14 @@ function App() {
     }
   };
 
+  const recognitionRef = useRef<any>(null);
+
   const startListening = () => {
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
     // @ts-ignore
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -115,6 +122,7 @@ function App() {
     }
     
     const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.lang = 'en-US';
@@ -178,10 +186,15 @@ function App() {
         e.preventDefault();
         triggerRundown();
       }
+      // Trigger on Ctrl+M for Mic
+      if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        startListening();
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chores, emails, github, isGenerating, isPlaying]);
+  }, [chores, emails, github, isGenerating, isPlaying, isListening]);
 
   const addChore = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,9 +264,9 @@ function App() {
             <button 
               className={`rundown-btn ${isListening ? 'pulsing listening' : ''}`}
               onClick={startListening}
-              title="Talk to Alfred"
+              title="Talk to Alfred (Ctrl+M)"
             >
-              🎤 {isListening ? 'Listening...' : 'Talk to Alfred'}
+              🎤 {isListening ? 'Listening...' : 'Talk to Alfred (Ctrl+M)'}
             </button>
             <button 
               className={`rundown-btn ${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
