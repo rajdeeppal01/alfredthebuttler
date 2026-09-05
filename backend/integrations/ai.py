@@ -9,8 +9,8 @@ def process_voice_command(user_text: str, context: dict = None):
         
     genai.configure(api_key=api_key)
     
-    # We use gemini-1.5-flash for speed in voice interactions
-    model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"response_mime_type": "application/json"})
+    # We use gemini-1.5-pro for better reasoning in voice interactions
+    model = genai.GenerativeModel('gemini-1.5-pro', generation_config={"response_mime_type": "application/json"})
     
     context_str = json.dumps(context) if context else "No context available."
     
