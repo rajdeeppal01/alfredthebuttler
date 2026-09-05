@@ -46,7 +46,7 @@ function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : 'https://alfredthebuttler-one.vercel.app';
+  const API_URL = 'https://alfredthebuttler-one.vercel.app';
 
   const fetchData = async () => {
     try {
