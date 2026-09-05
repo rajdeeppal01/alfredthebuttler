@@ -23,38 +23,42 @@ Here is the LIVE data currently on their dashboard:
 
 Supported actions:
 - "add_chore": If they want to add a chore. Include a "title" field with the chore name.
-- "delete_chore": If they want to delete or mark a chore as done. Include a "title" field with the chore name to delete.
-- "add_note": If they want to add an obsidian note. Include a "title" and "content" field.
-- "none": For general conversation, answering questions about the dashboard data, or anything else.
+</context>
 
-Your JSON MUST strictly match this schema:
+The user says: "{user_text}"
+
+Analyze the context and provide a response that directly answers the user.
+If they ask to DO something (like add a chore or send an email), determine the action.
+Otherwise, just respond conversationally.
+
+Respond ONLY with a valid JSON object matching the exact structure below, with NO markdown formatting, NO backticks, and NO extra text:
 {{
-  "action": "add_chore" | "delete_chore" | "add_note" | "none",
-  "title": "optional title for chore or note",
-  "content": "optional content for note",
-  "response": "A conversational voice response you will speak back to the user."
+    "action": "none" | "add_chore" | "send_email",
+    "response": "Your spoken response here."
 }}
-
-Crucially, if the user asks a question about their data (e.g. "what are my chores?", "who emailed me?", "read my rundown"), you MUST use the LIVE data provided above to answer them accurately in the 'response' field, and set action to 'none'. Keep your conversational response brief, friendly, and natural. Do not use markdown or emojis as it will be read by a text-to-speech engine.
-
-User said: "{user_text}"
 """
-    
     try:
         response = model.generate_content(prompt)
-        # Use simple try-except in case Gemini returns non-JSON or a markdown block
         text_resp = response.text
+    except Exception as e:
+        if "404" in str(e):
+            # Fallback for API keys that don't have access to 1.5 models (e.g., due to EU region restrictions)
+            try:
+                fallback_model = genai.GenerativeModel('gemini-pro')
+                response = fallback_model.generate_content(prompt)
+                text_resp = response.text
+            except Exception as e2:
+                return {"action": "none", "response": f"Failed with both 1.5 and 1.0 models. Error: {str(e2)}"}
+        else:
+            return {"action": "none", "response": f"My AI brain encountered an error: {str(e)}"}
+            
+    try:
         if text_resp.startswith("```json"):
             text_resp = text_resp.replace("```json", "").replace("```", "").strip()
-        
+        if text_resp.startswith("```"):
+            text_resp = text_resp.replace("```", "").strip()
+            
         result = json.loads(text_resp)
         return result
     except Exception as e:
-        print(f"Gemini Error: {e}")
-        try:
-            # If the response itself failed to generate (e.g. safety blocks)
-            prompt_feedback = response.prompt_feedback if hasattr(response, 'prompt_feedback') else "Unknown"
-            print(f"Feedback: {prompt_feedback}")
-        except:
-            pass
-        return {"action": "none", "response": f"My AI brain encountered an error: {str(e)}"}
+        return {"action": "none", "response": f"My AI brain encountered a JSON parsing error: {str(e)}"}
