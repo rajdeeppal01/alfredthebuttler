@@ -1,0 +1,154 @@
+.dashboard {
+  width: 90vw;
+  max-width: 600px;
+  min-height: 500px;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 2rem;
+  color: #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.add-chore-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.add-chore-form input {
+  flex: 1;
+}
+
+.chore-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chore-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+
+.chore-list li:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.chore-list li.completed span {
+  text-decoration: line-through;
+  color: #94a3b8;
+}
+
+.chore-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #3b82f6;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.checkbox.checked {
+  background: #3b82f6;
+}
+
+.checkbox.checked::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+}
+
+.delete-btn {
+  background: transparent;
+  color: #ef4444;
+  padding: 0.25rem 0.5rem;
+  opacity: 0.5;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  opacity: 1;
+}
+
+.empty-state {
+  color: #94a3b8;
+  text-align: center;
+  font-style: italic;
+  padding: 2rem 0;
+}
+
+.footer-links {
+  position: absolute;
+  bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.text-link:hover {
+  background: none;
+  color: #e2e8f0;
+  transform: none;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal-content {
+  width: 90vw;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-body {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
