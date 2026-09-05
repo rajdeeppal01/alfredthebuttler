@@ -3,7 +3,9 @@ uvicorn[standard]
 pydantic
 sqlalchemy
 keyboard
-elevenlabs
+edge-tts
+python-dotenv
+linkedin-api
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib

@@ -1,14 +1,37 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+import firebase_admin
+from firebase_admin import credentials, firestore
 import uvicorn
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
+import os
 
-from database import engine, get_db, Base
-import models
 import schemas
+from integrations.gmail import get_unread_emails
+from integrations.github import get_github_notifications
+from integrations.obsidian import get_recent_obsidian_notes
+from integrations.voice import generate_audio_sync_stream
 
-models.Base.metadata.create_all(bind=engine)
+import json
+
+# Initialize Firebase
+firebase_env = os.getenv("FIREBASE_SERVICE_ACCOUNT")
+db = None
+
+if firebase_env:
+    if not firebase_admin._apps:
+        cred = credentials.Certificate(json.loads(firebase_env))
+        firebase_admin.initialize_app(cred)
+    db = firestore.client()
+else:
+    cred_path = os.path.join(os.path.dirname(__file__), 'firebase_credentials.json')
+    if os.path.exists(cred_path):
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+        db = firestore.client()
 
 app = FastAPI(title="Assistant Dashboard API")
 
@@ -24,38 +47,57 @@ app.add_middleware(
 def read_root():
     return {"status": "ok", "message": "Assistant Backend is running"}
 
-@app.get("/chores", response_model=list[schemas.Chore])
-def read_chores(db: Session = Depends(get_db)):
-    return db.query(models.Chore).all()
+@app.get("/chores")
+def read_chores():
+    if not db:
+        return []
+    docs = db.collection("chores").stream()
+    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
 
-@app.post("/chores", response_model=schemas.Chore)
-def create_chore(chore: schemas.ChoreCreate, db: Session = Depends(get_db)):
-    db_chore = models.Chore(title=chore.title)
-    db.add(db_chore)
-    db.commit()
-    db.refresh(db_chore)
-    return db_chore
+@app.post("/chores")
+def create_chore(chore: schemas.ChoreCreate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    doc_ref = db.collection("chores").document()
+    doc_data = {"title": chore.title, "completed": False}
+    doc_ref.set(doc_data)
+    return {"id": doc_ref.id, **doc_data}
 
 class ChoreUpdate(BaseModel):
     completed: bool
 
-@app.put("/chores/{chore_id}", response_model=schemas.Chore)
-def update_chore(chore_id: int, chore_update: ChoreUpdate, db: Session = Depends(get_db)):
-    db_chore = db.query(models.Chore).filter(models.Chore.id == chore_id).first()
-    if db_chore:
-        db_chore.completed = chore_update.completed
-        db.commit()
-        db.refresh(db_chore)
-    return db_chore
+@app.put("/chores/{chore_id}")
+def update_chore(chore_id: str, chore_update: ChoreUpdate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    doc_ref = db.collection("chores").document(chore_id)
+    doc_ref.update({"completed": chore_update.completed})
+    return {"id": chore_id, "completed": chore_update.completed}
 
 @app.delete("/chores/{chore_id}")
-def delete_chore(chore_id: int, db: Session = Depends(get_db)):
-    db_chore = db.query(models.Chore).filter(models.Chore.id == chore_id).first()
-    if db_chore:
-        db.delete(db_chore)
-        db.commit()
+def delete_chore(chore_id: str):
+    if not db:
+        return {"error": "Firebase not connected"}
+    db.collection("chores").document(chore_id).delete()
     return {"status": "deleted"}
+
+
+@app.get("/emails")
+def read_emails():
+    return get_unread_emails()
+
+@app.get("/projects/github")
+def read_github():
+    return get_github_notifications()
+
+@app.get("/projects/obsidian")
+def read_obsidian():
+    return get_recent_obsidian_notes()
+
+@app.get("/voice/play")
+def play_voice(text: str):
+    audio_bytes = generate_audio_sync_stream(text)
+    return Response(content=audio_bytes, media_type="audio/mpeg")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
-
