@@ -40,6 +40,7 @@ function App() {
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -103,6 +104,71 @@ function App() {
       console.error("Error playing rundown", e);
       setIsGenerating(false);
     }
+  };
+
+  const startListening = () => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setIsListening(false);
+      setIsGenerating(true);
+      
+      try {
+        const res = await fetch(`${API_URL}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: transcript })
+        });
+        
+        const data = await res.json();
+        
+        fetchData(); // Refresh UI to show any changes
+        
+        const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.response)}`;
+        const audio = new Audio(audioUrl);
+        
+        audio.oncanplaythrough = () => {
+          setIsGenerating(false);
+          setIsPlaying(true);
+          audio.play();
+        };
+        
+        audio.onended = () => setIsPlaying(false);
+        audio.onerror = () => {
+          setIsGenerating(false);
+          setIsPlaying(false);
+        };
+      } catch (e) {
+        console.error(e);
+        setIsGenerating(false);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
   };
 
   useEffect(() => {
@@ -181,12 +247,21 @@ function App() {
       <div className="app-container">
         <header className="header glass-panel">
           <h1>Assistant Dashboard</h1>
-          <button 
-            className={`rundown-btn ${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
-            onClick={triggerRundown}
-          >
-            {isGenerating ? 'Generating...' : isPlaying ? 'Playing Audio...' : 'Play Morning Rundown (Ctrl+Space)'}
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              className={`rundown-btn ${isListening ? 'pulsing listening' : ''}`}
+              onClick={startListening}
+              title="Talk to Alfred"
+            >
+              🎤 {isListening ? 'Listening...' : 'Talk to Alfred'}
+            </button>
+            <button 
+              className={`rundown-btn ${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
+              onClick={triggerRundown}
+            >
+              {isGenerating ? 'Thinking...' : isPlaying ? 'Speaking...' : 'Morning Rundown'}
+            </button>
+          </div>
         </header>
 
         <div className="dashboard-grid">
