@@ -42,8 +42,19 @@ User said: "{user_text}"
     
     try:
         response = model.generate_content(prompt)
-        result = json.loads(response.text)
+        # Use simple try-except in case Gemini returns non-JSON or a markdown block
+        text_resp = response.text
+        if text_resp.startswith("```json"):
+            text_resp = text_resp.replace("```json", "").replace("```", "").strip()
+        
+        result = json.loads(text_resp)
         return result
     except Exception as e:
         print(f"Gemini Error: {e}")
-        return {"action": "none", "response": "Sorry, I had trouble processing that request."}
+        try:
+            # If the response itself failed to generate (e.g. safety blocks)
+            prompt_feedback = response.prompt_feedback if hasattr(response, 'prompt_feedback') else "Unknown"
+            print(f"Feedback: {prompt_feedback}")
+        except:
+            pass
+        return {"action": "none", "response": "Sorry, I had trouble processing that request. My AI brain might have encountered an error."}

@@ -41,7 +41,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [lastTranscript, setLastTranscript] = useState('');
+  const [chatInput, setChatInput] = useState('');
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -130,47 +130,12 @@ function App() {
 
     recognition.onstart = () => {
       setIsListening(true);
-      setLastTranscript('');
     };
 
-    recognition.onresult = async (event: any) => {
+    recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
-      setLastTranscript(transcript);
+      setChatInput(transcript); // Populate input box instead of auto-submitting
       setIsListening(false);
-      setIsGenerating(true);
-      
-      try {
-        const res = await fetch(`${API_URL}/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            text: transcript,
-            context: { chores, emails, github, obsidian }
-          })
-        });
-        
-        const data = await res.json();
-        
-        fetchData(); // Refresh UI to show any changes
-        
-        const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.response)}`;
-        const audio = new Audio(audioUrl);
-        
-        audio.oncanplaythrough = () => {
-          setIsGenerating(false);
-          setIsPlaying(true);
-          audio.play();
-        };
-        
-        audio.onended = () => setIsPlaying(false);
-        audio.onerror = () => {
-          setIsGenerating(false);
-          setIsPlaying(false);
-        };
-      } catch (e) {
-        console.error(e);
-        setIsGenerating(false);
-      }
     };
 
     recognition.onerror = (event: any) => {
@@ -183,6 +148,48 @@ function App() {
     };
 
     recognition.start();
+  };
+
+  const submitChat = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    setIsGenerating(true);
+    const textToSend = chatInput;
+    setChatInput('');
+    
+    try {
+      const res = await fetch(`${API_URL}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          text: textToSend,
+          context: { chores, emails, github, obsidian }
+        })
+      });
+      
+      const data = await res.json();
+      
+      fetchData(); // Refresh UI to show any changes
+      
+      const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.response)}`;
+      const audio = new Audio(audioUrl);
+      
+      audio.oncanplaythrough = () => {
+        setIsGenerating(false);
+        setIsPlaying(true);
+        audio.play();
+      };
+      
+      audio.onended = () => setIsPlaying(false);
+      audio.onerror = () => {
+        setIsGenerating(false);
+        setIsPlaying(false);
+      };
+    } catch (e) {
+      console.error(e);
+      setIsGenerating(false);
+    }
   };
 
   useEffect(() => {
@@ -283,12 +290,17 @@ function App() {
           </div>
         </header>
 
-        {lastTranscript && (
-          <div style={{ textAlign: 'center', marginBottom: '30px', padding: '15px', background: 'rgba(20, 20, 20, 0.6)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ color: '#888', marginRight: '10px' }}>Alfred heard:</span>
-            <strong style={{ fontSize: '18px' }}>"{lastTranscript}"</strong>
-          </div>
-        )}
+        <form onSubmit={submitChat} style={{ display: 'flex', gap: '10px', marginBottom: '30px', padding: '15px', background: 'rgba(20, 20, 20, 0.6)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <input 
+            value={chatInput} 
+            onChange={(e) => setChatInput(e.target.value)} 
+            placeholder='Type or say "what was my latest GitHub push?"' 
+            style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px 15px', borderRadius: '8px', fontSize: '16px', outline: 'none' }}
+          />
+          <button type="submit" className="rundown-btn" disabled={!chatInput.trim() || isGenerating} style={{ padding: '0 25px', opacity: chatInput.trim() ? 1 : 0.5 }}>
+            Send
+          </button>
+        </form>
 
         <div className="dashboard-grid">
           {/* Chores Panel */}
