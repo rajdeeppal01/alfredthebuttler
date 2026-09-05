@@ -36,7 +36,7 @@ def get_unread_emails():
     all_email_summaries = []
     
     # 1. Check environment variables for tokens (Vercel deployment)
-    for env_key, account_name in [('GMAIL_TOKEN_PERSONAL', 'personal'), ('GMAIL_TOKEN_WORK', 'work')]:
+    for env_key, account_name in [('GMAIL_TOKEN_WORK', 'work')]:
         token_str = os.getenv(env_key)
         if token_str:
             try:
@@ -49,12 +49,10 @@ def get_unread_emails():
     # 2. Fallback to local files (Local development)
     if not all_email_summaries:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        token_files = glob.glob(os.path.join(base_dir, 'token_*.json'))
-        
-        for token_path in token_files:
-            account_name = os.path.basename(token_path).replace('token_', '').replace('.json', '')
+        token_path = os.path.join(base_dir, 'token_work.json')
+        if os.path.exists(token_path):
             creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-            fetch_emails(creds, account_name, all_email_summaries)
+            fetch_emails(creds, 'work', all_email_summaries)
 
     if not all_email_summaries:
         return [{"id": "0", "sender": "System", "subject": "Auth Required", "snippet": "No Gmail accounts authenticated yet."}]

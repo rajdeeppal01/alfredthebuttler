@@ -11,8 +11,8 @@ import os
 import schemas
 from integrations.gmail import get_unread_emails
 from integrations.github import get_github_notifications
-from integrations.obsidian import get_recent_obsidian_notes
-from integrations.voice import generate_audio_sync_stream
+from integrations.obsidian import get_recent_obsidian_notes, create_obsidian_note
+from integrations.voice import generate_audio_stream
 
 import json
 
@@ -98,9 +98,16 @@ def read_github():
 def read_obsidian():
     return get_recent_obsidian_notes()
 
+@app.post("/projects/obsidian")
+def add_obsidian_note(note: schemas.NoteCreate):
+    success = create_obsidian_note(note.title, note.content)
+    if success:
+        return {"status": "created"}
+    return {"error": "Failed to create note"}
+
 @app.get("/voice/play")
-def play_voice(text: str):
-    audio_bytes = generate_audio_sync_stream(text)
+async def play_voice(text: str):
+    audio_bytes = await generate_audio_stream(text)
     return Response(content=audio_bytes, media_type="audio/mpeg")
 
 if __name__ == "__main__":

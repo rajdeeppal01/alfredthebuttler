@@ -12,3 +12,7 @@ class Chore(ChoreBase):
 
     class Config:
         from_attributes = True
+
+class NoteCreate(BaseModel):
+    title: str
+    content: str

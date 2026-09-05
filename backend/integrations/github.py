@@ -11,16 +11,25 @@ def get_github_notifications():
     
     try:
         g = Github(pat)
-        notifications = g.get_user().get_notifications(participating=True)
+        events = g.get_user().get_events()
         
         results = []
-        # Get up to 5 unread notifications
-        for notif in list(notifications)[:5]:
-            results.append({
-                "repository": notif.repository.full_name,
-                "title": notif.subject.title,
-                "type": notif.subject.type
-            })
+        for event in events:
+            if event.type == "PushEvent":
+                repo_name = event.repo.name
+                commits = event.payload.get("commits", [])
+                if commits:
+                    msg = commits[-1].get("message", "Pushed commits")
+                else:
+                    msg = "Pushed to repository"
+                
+                results.append({
+                    "repository": repo_name,
+                    "title": msg,
+                    "type": "Push"
+                })
+            if len(results) >= 5:
+                break
         return results
     except Exception as e:
         print(f"GitHub Error: {e}")

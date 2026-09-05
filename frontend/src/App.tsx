@@ -35,6 +35,8 @@ function App() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [github, setGithub] = useState<GithubNotif[]>([]);
   const [obsidian, setObsidian] = useState<ObsidianNote[]>([]);
+  const [newNoteTitle, setNewNoteTitle] = useState('');
+  const [newNoteContent, setNewNoteContent] = useState('');
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -141,6 +143,19 @@ function App() {
     fetchData();
   };
 
+  const addNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newNoteTitle.trim() || !newNoteContent.trim()) return;
+    await fetch(`${API_URL}/projects/obsidian`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newNoteTitle, content: newNoteContent })
+    });
+    setNewNoteTitle('');
+    setNewNoteContent('');
+    fetchData();
+  };
+
   return (
     <>
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1 }}>
@@ -213,7 +228,7 @@ function App() {
 
           {/* GitHub Panel */}
           <div className="section glass-panel">
-            <h2>GitHub Notifications</h2>
+            <h2>Latest GitHub Pushes</h2>
             <ul className="list">
               {github.map((notif, idx) => (
                 <li key={idx} className="data-item">
@@ -229,6 +244,16 @@ function App() {
           {/* Obsidian Panel */}
           <div className="section glass-panel">
             <h2>Recent Notes</h2>
+            <form onSubmit={addNote} className="add-chore-form" style={{ flexDirection: 'column', gap: '8px', marginBottom: '15px', alignItems: 'stretch' }}>
+              <input value={newNoteTitle} onChange={(e) => setNewNoteTitle(e.target.value)} placeholder="Note Title..." />
+              <textarea 
+                value={newNoteContent} 
+                onChange={(e) => setNewNoteContent(e.target.value)} 
+                placeholder="Note Content..." 
+                style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(0, 0, 0, 0.2)', color: 'white', minHeight: '60px', fontFamily: 'inherit', resize: 'vertical' }} 
+              />
+              <button type="submit" style={{ alignSelf: 'flex-end', padding: '8px 16px' }}>Add Note</button>
+            </form>
             <ul className="list">
               {obsidian.map((note, idx) => (
                 <li key={idx} className="data-item">

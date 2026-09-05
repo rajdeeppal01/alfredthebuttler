@@ -40,3 +40,20 @@ def get_recent_obsidian_notes():
     except Exception as e:
         print(f"Obsidian Error: {e}")
         return []
+
+def create_obsidian_note(title: str, content: str):
+    pat = os.getenv("GITHUB_PAT")
+    repo_name = os.getenv("OBSIDIAN_GITHUB_REPO")
+    
+    if not pat or not repo_name:
+        return False
+        
+    try:
+        g = Github(pat)
+        repo = g.get_repo(repo_name)
+        filename = f"{title.strip()}.md"
+        repo.create_file(filename, f"Add note: {title}", content)
+        return True
+    except Exception as e:
+        print(f"Error creating note: {e}")
+        return False
