@@ -41,13 +41,15 @@ function App() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL || '/api';
+
   const fetchData = async () => {
     try {
       const [choresRes, emailsRes, githubRes, obsidianRes] = await Promise.all([
-        fetch('/api/chores'),
-        fetch('/api/emails'),
-        fetch('/api/projects/github'),
-        fetch('/api/projects/obsidian')
+        fetch(`${API_URL}/chores`),
+        fetch(`${API_URL}/emails`),
+        fetch(`${API_URL}/projects/github`),
+        fetch(`${API_URL}/projects/obsidian`)
       ]);
 
       setChores(await choresRes.json());
@@ -81,7 +83,7 @@ function App() {
     rundownText += "Have a great day!";
 
     try {
-      const audioUrl = `/api/voice/play?text=${encodeURIComponent(rundownText)}`;
+      const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(rundownText)}`;
       const audio = new Audio(audioUrl);
       
       audio.oncanplaythrough = () => {
@@ -116,7 +118,7 @@ function App() {
   const addChore = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newChore.trim()) return;
-    await fetch('/api/chores', {
+    await fetch(`${API_URL}/chores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: newChore })
@@ -126,7 +128,7 @@ function App() {
   };
 
   const toggleChore = async (id: string, completed: boolean) => {
-    await fetch(`http://127.0.0.1:8000/chores/${id}`, {
+    await fetch(`${API_URL}/chores/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ completed: !completed })
@@ -135,7 +137,7 @@ function App() {
   };
 
   const deleteChore = async (id: string) => {
-    await fetch(`http://127.0.0.1:8000/chores/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/chores/${id}`, { method: 'DELETE' });
     fetchData();
   };
 
