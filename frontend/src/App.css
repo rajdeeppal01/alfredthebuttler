@@ -12,7 +12,7 @@ body {
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 20px 20px 40px 20px;
   position: relative;
   z-index: 10;
 }
@@ -21,13 +21,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  margin-bottom: 20px;
+  padding: 20px 30px;
+  margin-bottom: 30px;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   letter-spacing: -0.5px;
 }
@@ -41,6 +41,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 14px;
 }
 
 .rundown-btn:hover {
@@ -71,8 +72,8 @@ body {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
 }
 
 .glass-panel {
@@ -80,7 +81,7 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 20px;
+  padding: 25px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
