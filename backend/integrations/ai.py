@@ -57,4 +57,4 @@ User said: "{user_text}"
             print(f"Feedback: {prompt_feedback}")
         except:
             pass
-        return {"action": "none", "response": "Sorry, I had trouble processing that request. My AI brain might have encountered an error."}
+        return {"action": "none", "response": f"My AI brain encountered an error: {str(e)}"}
