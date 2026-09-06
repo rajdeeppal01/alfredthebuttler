@@ -10,29 +10,50 @@ def get_github_notifications():
         return [{"repository": "System", "title": "GitHub PAT Missing", "type": "Error"}]
     
     try:
+        from datetime import datetime, timedelta, timezone
         g = Github(pat)
         user = g.get_user()
         my_username = user.login
-        events = g.get_user(my_username).get_events()
         
-        results = []
+        events = g.get_user(my_username).get_events()
+        today = datetime.now(timezone.utc).date()
+        
+        commits_today = 0
+        latest_commit_msg = None
+        latest_repo = None
+        
         for event in events:
             if event.type == "PushEvent":
-                repo_name = event.repo.name
                 commits = event.payload.get("commits", [])
-                if commits:
-                    msg = commits[-1].get("message", "Pushed commits")
-                else:
-                    msg = "Pushed to repository"
                 
-                results.append({
-                    "repository": repo_name,
-                    "title": msg,
-                    "type": "Push"
-                })
-            if len(results) >= 5:
+                if not latest_commit_msg and commits:
+                    latest_commit_msg = commits[-1].get("message")
+                    latest_repo = event.repo.name
+                    
+                if event.created_at.date() == today:
+                    commits_today += len(commits)
+        
+        if not latest_commit_msg:
+            latest_commit_msg = "No recent commits"
+            latest_repo = "None"
+            
+        one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        dormant_repo = None
+        for repo in user.get_repos(type="owner", sort="pushed", direction="asc"):
+            if repo.pushed_at and repo.pushed_at < one_week_ago.replace(tzinfo=None):
+                dormant_repo = repo.name
                 break
-        return results
+                
+        if not dormant_repo:
+            dormant_repo = "None"
+            
+        return [{
+            "repository": latest_repo,
+            "title": latest_commit_msg,
+            "commits_today": commits_today,
+            "dormant_repo": dormant_repo,
+            "type": "Summary"
+        }]
     except Exception as e:
         print(f"GitHub Error: {e}")
-        return []
+        return [{"repository": "System", "title": str(e), "type": "Error"}]

@@ -146,10 +146,16 @@ def handle_chat(req: schemas.ChatRequest):
         elif github_data and "Error" in github_data[0].get("type", ""):
             response_text = "I couldn't access your GitHub account. Please make sure your GITHUB_PAT is set correctly."
         else:
-            latest = github_data[0]
-            repo = latest.get("repository", "a repository")
-            msg = latest.get("title", "some commits")
-            response_text = f"Your latest GitHub push was to the repository '{repo}' with the message: '{msg}'."
+            data = github_data[0]
+            repo = data.get("repository", "a repository")
+            msg = data.get("title", "some commits")
+            commits_today = data.get("commits_today", 0)
+            dormant = data.get("dormant_repo", "None")
+            
+            response_text = f"Your latest push was to '{repo}' with the commit message: '{msg}'. "
+            response_text += f"You have pushed {commits_today} commits across all repositories today. "
+            if dormant != "None":
+                response_text += f"By the way, you haven't touched the '{dormant}' repository in over a week."
             
     return {"response": response_text, "action": action}
 
