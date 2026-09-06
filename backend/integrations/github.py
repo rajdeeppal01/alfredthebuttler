@@ -40,7 +40,7 @@ def get_github_notifications():
         one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         dormant_repo = None
         for repo in user.get_repos(type="owner", sort="pushed", direction="asc"):
-            if repo.pushed_at and repo.pushed_at < one_week_ago.replace(tzinfo=None):
+            if repo.pushed_at and repo.pushed_at.replace(tzinfo=None) < one_week_ago.replace(tzinfo=None):
                 dormant_repo = repo.name
                 break
                 
