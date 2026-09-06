@@ -285,7 +285,7 @@ function App() {
               onClick={startListening}
               title="Talk to Alfred (Ctrl+M)"
             >
-              🎤 {isListening ? 'Listening...' : 'Talk to Alfred (Ctrl+M)'}
+              {isListening ? 'Listening...' : 'Talk to Alfred (Ctrl+M)'}
             </button>
             <button 
               className={`rundown-btn ${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
