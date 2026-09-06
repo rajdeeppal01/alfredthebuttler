@@ -33,13 +33,48 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 }}
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    # 1. Fetch available models for this specific API key to bypass any 404s
+    models_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+    try:
+        req_models = urllib.request.Request(models_url)
+        with urllib.request.urlopen(req_models) as response:
+            models_data = json.loads(response.read().decode('utf-8'))
+            
+            available_models = []
+            for m in models_data.get("models", []):
+                if "generateContent" in m.get("supportedGenerationMethods", []):
+                    available_models.append(m["name"])
+            
+            if not available_models:
+                return {"action": "none", "response": "Your API key is valid, but Google says it has no access to any text generation models!"}
+                
+            # Prefer 1.5 flash, then 1.5 pro, then 1.0 pro, else fallback to first available
+            chosen_model = None
+            preferences = ["models/gemini-1.5-flash", "models/gemini-1.5-flash-latest", "models/gemini-1.5-pro", "models/gemini-pro"]
+            for pref in preferences:
+                if pref in available_models:
+                    chosen_model = pref
+                    break
+            
+            if not chosen_model:
+                chosen_model = available_models[0]
+                
+    except Exception as e:
+        return {"action": "none", "response": f"Failed to fetch available models from Google: {str(e)}"}
+
+    # 2. Call generateContent with the dynamically chosen model
+    url = f"https://generativelanguage.googleapis.com/v1beta/{chosen_model}:generateContent?key={api_key}"
+    
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
             "responseMimeType": "application/json"
         }
     }
+    
+    # Gemini 1.0 Pro does not support JSON mode natively
+    if "gemini-pro" in chosen_model and "1.5" not in chosen_model:
+        del payload["generationConfig"]["responseMimeType"]
     
     req = urllib.request.Request(
         url,
@@ -73,6 +108,6 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
             error_msg = error_json.get("error", {}).get("message", error_body)
         except:
             error_msg = str(e)
-        return {"action": "none", "response": f"Google API Error {e.code}: {error_msg}"}
+        return {"action": "none", "response": f"Google API Error with model {chosen_model}: {error_msg}"}
     except Exception as e:
         return {"action": "none", "response": f"My AI brain encountered an error: {str(e)}"}
