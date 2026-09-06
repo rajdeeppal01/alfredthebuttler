@@ -33,36 +33,10 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 }}
 """
 
-    # 1. Fetch available models for this specific API key to bypass any 404s
-    models_url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
-    try:
-        req_models = urllib.request.Request(models_url)
-        with urllib.request.urlopen(req_models) as response:
-            models_data = json.loads(response.read().decode('utf-8'))
-            
-            available_models = []
-            for m in models_data.get("models", []):
-                if "generateContent" in m.get("supportedGenerationMethods", []):
-                    available_models.append(m["name"])
-            
-            if not available_models:
-                return {"action": "none", "response": "Your API key is valid, but Google says it has no access to any text generation models!"}
-                
-            # Prefer 3.6 flash, then 3.6 pro, else fallback to first available
-            chosen_model = None
-            preferences = ["models/gemini-3.6-flash", "models/gemini-3.6-pro", "models/gemini-2.5-flash", "models/gemini-1.5-flash"]
-            for pref in preferences:
-                if pref in available_models:
-                    chosen_model = pref
-                    break
-            
-            if not chosen_model:
-                chosen_model = available_models[0]
-                
-    except Exception as e:
-        return {"action": "none", "response": f"Failed to fetch available models from Google: {str(e)}"}
+    # 1. Force use of gemini-3.6-flash as requested by Google API
+    chosen_model = "models/gemini-3.6-flash"
 
-    # 2. Call generateContent with the dynamically chosen model
+    # 2. Call generateContent with the chosen model
     url = f"https://generativelanguage.googleapis.com/v1beta/{chosen_model}:generateContent?key={api_key}"
     
     payload = {
