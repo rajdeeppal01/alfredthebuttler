@@ -34,55 +34,61 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 }}
 """
 
-    # 1. Force use of gemini-3.6-flash as requested by Google API
-    chosen_model = "models/gemini-3.6-flash"
-
-    # 2. Call generateContent with the chosen model
-    url = f"https://generativelanguage.googleapis.com/v1beta/{chosen_model}:generateContent?key={api_key}"
+    # Define a list of models to try in case of high demand / 503 errors
+    fallback_models = ["models/gemini-3.6-flash", "models/gemini-3.6-pro", "models/gemini-2.5-flash", "models/gemini-1.5-pro"]
+    last_error = "Unknown error"
     
-    payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "responseMimeType": "application/json"
+    for chosen_model in fallback_models:
+        url = f"https://generativelanguage.googleapis.com/v1beta/{chosen_model}:generateContent?key={api_key}"
+        
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
         }
-    }
-    
-    # Gemini 1.0 Pro does not support JSON mode natively
-    if "gemini-pro" in chosen_model and "1.5" not in chosen_model:
-        del payload["generationConfig"]["responseMimeType"]
-    
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'},
-        method='POST'
-    )
-    
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_body = response.read().decode('utf-8')
-            data = json.loads(res_body)
-            
-            if "candidates" not in data or not data["candidates"]:
-                return {"action": "none", "response": "My AI brain returned an empty response."}
-                
-            text_resp = data["candidates"][0]["content"]["parts"][0]["text"]
-            
-            if text_resp.startswith("```json"):
-                text_resp = text_resp.replace("```json", "").replace("```", "").strip()
-            if text_resp.startswith("```"):
-                text_resp = text_resp.replace("```", "").strip()
-                
-            result = json.loads(text_resp)
-            return result
-            
-    except urllib.error.HTTPError as e:
+        
+        # Gemini 1.0 Pro does not support JSON mode natively
+        if "gemini-pro" in chosen_model and "1.5" not in chosen_model:
+            del payload["generationConfig"]["responseMimeType"]
+        
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode('utf-8'),
+            headers={'Content-Type': 'application/json'},
+            method='POST'
+        )
+        
         try:
-            error_body = e.read().decode('utf-8')
-            error_json = json.loads(error_body)
-            error_msg = error_json.get("error", {}).get("message", error_body)
-        except:
-            error_msg = str(e)
-        return {"action": "none", "response": f"Google API Error with model {chosen_model}: {error_msg}"}
-    except Exception as e:
-        return {"action": "none", "response": f"My AI brain encountered an error: {str(e)}"}
+            with urllib.request.urlopen(req) as response:
+                res_body = response.read().decode('utf-8')
+                data = json.loads(res_body)
+                
+                if "candidates" not in data or not data["candidates"]:
+                    return {"action": "none", "response": "My AI brain returned an empty response."}
+                    
+                text_resp = data["candidates"][0]["content"]["parts"][0]["text"]
+                
+                if text_resp.startswith("```json"):
+                    text_resp = text_resp.replace("```json", "").replace("```", "").strip()
+                if text_resp.startswith("```"):
+                    text_resp = text_resp.replace("```", "").strip()
+                    
+                result = json.loads(text_resp)
+                return result
+                
+        except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                error_json = json.loads(error_body)
+                last_error = error_json.get("error", {}).get("message", error_body)
+            except:
+                last_error = str(e)
+            
+            # If we get a 404 or 503, try the next model
+            continue
+        except Exception as e:
+            last_error = str(e)
+            continue
+
+    return {"action": "none", "response": f"All Google AI models failed (Google's servers might be down). Last error from {chosen_model}: {last_error}"}
