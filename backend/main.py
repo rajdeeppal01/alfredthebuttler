@@ -86,6 +86,29 @@ def delete_chore(chore_id: str):
     db.collection("chores").document(chore_id).delete()
     return {"status": "deleted"}
 
+@app.get("/reminders")
+def read_reminders():
+    if not db:
+        return []
+    docs = db.collection("reminders").stream()
+    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+
+@app.post("/reminders")
+def create_reminder(reminder: schemas.ReminderCreate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    doc_ref = db.collection("reminders").document()
+    doc_data = {"title": reminder.title, "due_date": reminder.due_date}
+    doc_ref.set(doc_data)
+    return {"id": doc_ref.id, **doc_data}
+
+@app.delete("/reminders/{reminder_id}")
+def delete_reminder(reminder_id: str):
+    if not db:
+        return {"error": "Firebase not connected"}
+    db.collection("reminders").document(reminder_id).delete()
+    return {"status": "deleted"}
+
 
 @app.get("/emails")
 def read_emails():
@@ -159,6 +182,12 @@ def handle_chat(req: schemas.ChatRequest):
                 response_text += f"By the way, you haven't touched the '{dormant}' repository in over a week."
             
     return {"response": response_text, "action": action}
+
+@app.post("/generate_rundown")
+def generate_rundown_endpoint(context: schemas.ChatRequest):
+    from integrations.ai import generate_greeting
+    greeting = generate_greeting(context.context)
+    return {"greeting": greeting}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

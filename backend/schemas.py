@@ -21,3 +21,16 @@ class NoteCreate(BaseModel):
 class ChatRequest(BaseModel):
     text: str
     context: Optional[Dict[str, Any]] = None
+
+class ReminderBase(BaseModel):
+    title: str
+    due_date: str
+
+class ReminderCreate(ReminderBase):
+    pass
+
+class Reminder(ReminderBase):
+    id: int
+
+    class Config:
+        from_attributes = True

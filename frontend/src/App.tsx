@@ -24,6 +24,12 @@ interface GithubNotif {
   type: string;
 }
 
+interface Reminder {
+  id: string;
+  title: string;
+  due_date: string;
+}
+
 interface ObsidianNote {
   title: string;
   snippet: string;
@@ -35,8 +41,11 @@ function App() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [github, setGithub] = useState<GithubNotif[]>([]);
   const [obsidian, setObsidian] = useState<ObsidianNote[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newNoteTitle, setNewNoteTitle] = useState('');
   const [newNoteContent, setNewNoteContent] = useState('');
+  const [newReminder, setNewReminder] = useState('');
+  const [newDueDate, setNewDueDate] = useState('');
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -50,45 +59,71 @@ function App() {
 
   const fetchData = async () => {
     try {
-      const [choresRes, emailsRes, githubRes, obsidianRes] = await Promise.all([
+      const [choresRes, emailsRes, githubRes, obsidianRes, remindersRes] = await Promise.all([
         fetch(`${API_URL}/chores`),
         fetch(`${API_URL}/emails`),
         fetch(`${API_URL}/projects/github`),
-        fetch(`${API_URL}/projects/obsidian`)
+        fetch(`${API_URL}/projects/obsidian`),
+        fetch(`${API_URL}/reminders`)
       ]);
 
-      setChores(await choresRes.json());
-      setEmails(await emailsRes.json());
-      setGithub(await githubRes.json());
-      setObsidian(await obsidianRes.json());
+      const choresData = await choresRes.json();
+      const emailsData = await emailsRes.json();
+      const githubData = await githubRes.json();
+      const obsidianData = await obsidianRes.json();
+      const remindersData = await remindersRes.json();
+
+      setChores(choresData);
+      setEmails(emailsData);
+      setGithub(githubData);
+      setObsidian(obsidianData);
+      setReminders(remindersData);
+      
+      return { chores: choresData, emails: emailsData, github: githubData, obsidian: obsidianData, reminders: remindersData };
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchData().then((data) => {
+      if (data) autoGreet(data);
+    });
+  }, []);
+
+  const autoGreet = async (contextData: any) => {
+    try {
+      const res = await fetch(`${API_URL}/generate_rundown`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: "generate", context: contextData })
+      });
+      const data = await res.json();
+      if (data.greeting) {
+        const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.greeting)}`;
+        const audio = new Audio(audioUrl);
+        audio.play().catch(e => console.log("Autoplay blocked by browser. User must click Morning Rundown to hear it.", e));
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const triggerRundown = async () => {
     if (isGenerating || isPlaying) return;
     setIsGenerating(true);
 
-    const pendingChores = chores.filter(c => !c.completed).length;
-    let rundownText = `Good morning! You have ${pendingChores} pending chores today. `;
-    
-    if (emails.length > 0) {
-      rundownText += `You have ${emails.length} unread emails. `;
-    }
-    
-    if (github.length > 0) {
-      rundownText += `You have ${github.length} GitHub notifications. `;
-    }
-
-    rundownText += "Have a great day!";
-
     try {
-      const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(rundownText)}`;
+      const contextData = { chores, emails, github, obsidian, reminders };
+      const res = await fetch(`${API_URL}/generate_rundown`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: "generate", context: contextData })
+      });
+      const data = await res.json();
+      
+      const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.greeting)}`;
       const audio = new Audio(audioUrl);
       
       audio.oncanplaythrough = () => {
@@ -260,6 +295,24 @@ function App() {
     fetchData();
   };
 
+  const addReminder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReminder.trim() || !newDueDate.trim()) return;
+    await fetch(`${API_URL}/reminders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newReminder, due_date: newDueDate })
+    });
+    setNewReminder('');
+    setNewDueDate('');
+    fetchData();
+  };
+
+  const deleteReminder = async (id: string) => {
+    await fetch(`${API_URL}/reminders/${id}`, { method: 'DELETE' });
+    fetchData();
+  };
+
   return (
     <>
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1 }}>
@@ -349,6 +402,28 @@ function App() {
                 </li>
               ))}
               {emails.length === 0 && <p className="empty-state">Inbox Zero!</p>}
+            </ul>
+          </div>
+          
+          {/* Reminders Panel */}
+          <div className="section glass-panel">
+            <h2>Meetings & Reminders</h2>
+            <form onSubmit={addReminder} className="add-chore-form" style={{ flexDirection: 'column' }}>
+              <input value={newReminder} onChange={(e) => setNewReminder(e.target.value)} placeholder="Meeting / Reminder Title" />
+              <input type="datetime-local" value={newDueDate} onChange={(e) => setNewDueDate(e.target.value)} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px 15px', borderRadius: '8px', outline: 'none' }} />
+              <button type="submit" style={{ padding: '12px', marginTop: '5px' }}>Add Schedule</button>
+            </form>
+            <ul className="list">
+              {reminders.map(rem => (
+                <li key={rem.id} className="data-item">
+                  <div className="item-info">
+                    <strong>{rem.title}</strong>
+                    <span className="subtitle">{new Date(rem.due_date).toLocaleString()}</span>
+                  </div>
+                  <button className="delete-btn" onClick={() => deleteReminder(rem.id)}>✕</button>
+                </li>
+              ))}
+              {reminders.length === 0 && <p className="empty-state">No upcoming meetings or reminders.</p>}
             </ul>
           </div>
 
