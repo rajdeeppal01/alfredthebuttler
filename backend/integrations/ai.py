@@ -48,9 +48,9 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
             if not available_models:
                 return {"action": "none", "response": "Your API key is valid, but Google says it has no access to any text generation models!"}
                 
-            # Prefer 1.5 flash, then 1.5 pro, then 1.0 pro, else fallback to first available
+            # Prefer 3.6 flash, then 3.6 pro, else fallback to first available
             chosen_model = None
-            preferences = ["models/gemini-1.5-flash", "models/gemini-1.5-flash-latest", "models/gemini-1.5-pro", "models/gemini-pro"]
+            preferences = ["models/gemini-3.6-flash", "models/gemini-3.6-pro", "models/gemini-2.5-flash", "models/gemini-1.5-flash"]
             for pref in preferences:
                 if pref in available_models:
                     chosen_model = pref
