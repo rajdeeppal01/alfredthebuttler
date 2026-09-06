@@ -26,12 +26,15 @@ def get_github_notifications():
             if event.type == "PushEvent":
                 commits = event.payload.get("commits", [])
                 
-                if not latest_commit_msg and commits:
-                    latest_commit_msg = commits[-1].get("message")
+                if not latest_repo:
                     latest_repo = event.repo.name
+                    if commits:
+                        latest_commit_msg = commits[-1].get("message", "Pushed to repository")
+                    else:
+                        latest_commit_msg = "Pushed to repository"
                     
                 if event.created_at.date() == today:
-                    commits_today += len(commits)
+                    commits_today += max(len(commits), 1)
         
         if not latest_commit_msg:
             latest_commit_msg = "No recent commits"
