@@ -2,7 +2,7 @@ import edge_tts
 import asyncio
 
 async def generate_audio_stream(text: str):
-    voice = "en-US-ChristopherNeural"
+    voice = "en-GB-RyanNeural"
     communicate = edge_tts.Communicate(text, voice)
     
     audio_data = bytearray()
