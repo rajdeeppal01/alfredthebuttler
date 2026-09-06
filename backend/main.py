@@ -144,7 +144,8 @@ def handle_chat(req: schemas.ChatRequest):
         if not github_data:
             response_text = "I checked your GitHub account, but there are no recent pushes."
         elif github_data and "Error" in github_data[0].get("type", ""):
-            response_text = "I couldn't access your GitHub account. Please make sure your GITHUB_PAT is set correctly."
+            error_msg = github_data[0].get("title", "Unknown error")
+            response_text = f"I couldn't access your GitHub account. Error details: {error_msg}"
         else:
             data = github_data[0]
             repo = data.get("repository", "a repository")
