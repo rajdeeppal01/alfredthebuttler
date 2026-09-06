@@ -438,7 +438,7 @@ function App() {
                   <p className="snippet">{notif.title}</p>
                 </li>
               ))}
-              {github.length === 0 && <p className="empty-state">All caught up on GitHub!</p>}
+              {github.length === 0 && <p className="empty-state">No recent repository activity.</p>}
             </ul>
           </div>
 

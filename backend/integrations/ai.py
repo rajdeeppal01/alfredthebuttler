@@ -111,7 +111,7 @@ Here is his live dashboard data:
 Instructions:
 1. Greet him by name ("Greetings Mr. Wayne...").
 2. Summarize his pending chores.
-3. Check the GitHub data. Point out the 'dormant_repo' if one exists, and mention the 'latest_commit_msg' or 'commits_today'. 
+3. Check the GitHub data. The data contains your 'Latest Push' and any 'Untouched' tracked repos. Organically call him out if he is neglecting the untouched repos, and mention his latest push! 
 4. Summarize unread emails and Obsidian notes if they exist.
 5. Remind him of any upcoming Reminders/Meetings if they exist.
 6. Make it conversational, under 4 sentences if possible. Do NOT use markdown or bullet points. This will be spoken via TTS.
