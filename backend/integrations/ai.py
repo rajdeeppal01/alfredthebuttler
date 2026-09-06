@@ -24,12 +24,13 @@ The user says: "{user_text}"
 
 Analyze the context and provide a response that directly answers the user.
 If they ask to DO something (like add a chore or send an email), determine the action.
+If they ask about their latest GitHub pushes or activity, use the "check_github" action to fetch fresh data.
 Otherwise, just respond conversationally.
 
 Respond ONLY with a valid JSON object matching the exact structure below, with NO markdown formatting, NO backticks, and NO extra text:
 {{
-    "action": "none" | "add_chore" | "send_email",
-    "response": "Your spoken response here."
+    "action": "none" | "add_chore" | "send_email" | "check_github",
+    "response": "Your spoken response here. (If action is check_github, leave response blank, the system will fill it)"
 }}
 """
 

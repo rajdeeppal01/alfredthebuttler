@@ -139,6 +139,18 @@ def handle_chat(req: schemas.ChatRequest):
         content = intent.get("content", "")
         create_obsidian_note(title, content)
         
+    elif action == "check_github":
+        github_data = get_github_notifications()
+        if not github_data:
+            response_text = "I checked your GitHub account, but there are no recent pushes."
+        elif github_data and "Error" in github_data[0].get("type", ""):
+            response_text = "I couldn't access your GitHub account. Please make sure your GITHUB_PAT is set correctly."
+        else:
+            latest = github_data[0]
+            repo = latest.get("repository", "a repository")
+            msg = latest.get("title", "some commits")
+            response_text = f"Your latest GitHub push was to the repository '{repo}' with the message: '{msg}'."
+            
     return {"response": response_text, "action": action}
 
 if __name__ == "__main__":
