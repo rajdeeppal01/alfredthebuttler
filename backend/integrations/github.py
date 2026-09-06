@@ -11,7 +11,9 @@ def get_github_notifications():
     
     try:
         g = Github(pat)
-        events = g.get_user().get_events()
+        user = g.get_user()
+        my_username = user.login
+        events = g.get_user(my_username).get_events()
         
         results = []
         for event in events:
