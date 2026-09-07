@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './App.css';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsConditions from './TermsConditions';
+import SpecularButton from './components/SpecularButton';
 // @ts-ignore
 import Particles from './components/Particles';
 import ForceGraph2D from 'react-force-graph-2d';
@@ -31,23 +32,15 @@ interface Reminder {
   due_date: string;
 }
 
-interface ObsidianNote {
-  title: string;
-  snippet: string;
-}
-
 function App() {
   const [chores, setChores] = useState<Chore[]>([]);
   const [newChore, setNewChore] = useState('');
   const [emails, setEmails] = useState<Email[]>([]);
   const [github, setGithub] = useState<GithubNotif[]>([]);
-  const [obsidian, setObsidian] = useState<ObsidianNote[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [stickyNotes, setStickyNotes] = useState<any[]>([]);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   
-  const [newNoteTitle, setNewNoteTitle] = useState('');
-  const [newNoteContent, setNewNoteContent] = useState('');
   const [newStickyTitle, setNewStickyTitle] = useState('');
   const [newStickyContent, setNewStickyContent] = useState('');
   const [newReminder, setNewReminder] = useState('');
@@ -76,11 +69,10 @@ function App() {
         }
       };
 
-      const [choresData, emailsData, githubData, obsidianData, remindersData, stickyNotesData, graphDataRes] = await Promise.all([
+      const [choresData, emailsData, githubData, remindersData, stickyNotesData, graphDataRes] = await Promise.all([
         fetchSafely(`${API_URL}/chores`),
         fetchSafely(`${API_URL}/emails`),
         fetchSafely(`${API_URL}/projects/github`),
-        fetchSafely(`${API_URL}/projects/obsidian`),
         fetchSafely(`${API_URL}/reminders`),
         fetchSafely(`${API_URL}/sticky_notes`),
         fetchSafely(`${API_URL}/projects/obsidian/graph`)
@@ -89,12 +81,11 @@ function App() {
       setChores(choresData);
       setEmails(emailsData);
       setGithub(githubData);
-      setObsidian(obsidianData);
       setReminders(remindersData);
       setStickyNotes(stickyNotesData);
       setGraphData(graphDataRes);
       
-      return { chores: choresData, emails: emailsData, github: githubData, obsidian: obsidianData, reminders: remindersData, stickyNotes: stickyNotesData };
+      return { chores: choresData, emails: emailsData, github: githubData, reminders: remindersData, stickyNotes: stickyNotesData };
     } catch (e) {
       console.error(e);
       return null;
@@ -130,7 +121,7 @@ function App() {
     setIsGenerating(true);
 
     try {
-      const contextData = { chores, emails, github, obsidian, reminders };
+      const contextData = { chores, emails, github, reminders };
       const res = await fetch(`${API_URL}/generate_rundown`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -216,7 +207,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           text: textToSend,
-          context: { chores, emails, github, obsidian }
+          context: { chores, emails, github }
         })
       });
       
@@ -297,19 +288,6 @@ function App() {
     fetchData();
   };
 
-  const addNote = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newNoteTitle.trim() || !newNoteContent.trim()) return;
-    await fetch(`${API_URL}/projects/obsidian`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newNoteTitle, content: newNoteContent })
-    });
-    setNewNoteTitle('');
-    setNewNoteContent('');
-    fetchData();
-  };
-
   const addReminder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReminder.trim() || !newDueDate.trim()) return;
@@ -366,19 +344,20 @@ function App() {
         <header className="header glass-panel">
           <h1>Assistant Dashboard</h1>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              className={`rundown-btn ${isListening ? 'pulsing listening' : ''}`}
+            <SpecularButton 
+              className={isListening ? 'pulsing listening' : ''}
               onClick={startListening}
-              title="Talk to Alfred (Ctrl+M)"
+              size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               {isListening ? 'Listening...' : 'Talk to Alfred (Ctrl+M)'}
-            </button>
-            <button 
-              className={`rundown-btn ${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
+            </SpecularButton>
+            <SpecularButton 
+              className={`${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
               onClick={triggerRundown}
+              size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               {isGenerating ? 'Thinking...' : isPlaying ? 'Speaking...' : 'Morning Rundown'}
-            </button>
+            </SpecularButton>
           </div>
         </header>
 
@@ -389,9 +368,15 @@ function App() {
             placeholder='Type or say "what was my latest GitHub push?"' 
             style={{ flex: 1, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px 15px', borderRadius: '8px', fontSize: '16px', outline: 'none' }}
           />
-          <button type="submit" className="rundown-btn" disabled={!chatInput.trim() || isGenerating} style={{ padding: '0 25px', opacity: chatInput.trim() ? 1 : 0.5 }}>
-            Send
-          </button>
+          <div style={{ opacity: chatInput.trim() ? 1 : 0.5 }}>
+            <SpecularButton 
+              type="submit" 
+              disabled={!chatInput.trim() || isGenerating}
+              size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
+            >
+              Send
+            </SpecularButton>
+          </div>
         </form>
 
         {chatResponse && (
@@ -407,7 +392,7 @@ function App() {
             <h2>Daily Chores</h2>
             <form onSubmit={addChore} className="add-chore-form">
               <input value={newChore} onChange={(e) => setNewChore(e.target.value)} placeholder="Add a new chore..." />
-              <button type="submit">Add</button>
+              <SpecularButton type="submit" size="sm" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>Add</SpecularButton>
             </form>
             <ul className="list">
               {chores.map(chore => (
@@ -444,7 +429,9 @@ function App() {
             <form onSubmit={addReminder} className="add-chore-form" style={{ flexDirection: 'column' }}>
               <input value={newReminder} onChange={(e) => setNewReminder(e.target.value)} placeholder="Meeting / Reminder Title" />
               <input type="datetime-local" value={newDueDate} onChange={(e) => setNewDueDate(e.target.value)} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px 15px', borderRadius: '8px', outline: 'none' }} />
-              <button type="submit" style={{ padding: '12px', marginTop: '5px' }}>Add Schedule</button>
+              <div style={{ marginTop: '10px' }}>
+                <SpecularButton type="submit" size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>Add Schedule</SpecularButton>
+              </div>
             </form>
             <ul className="list">
               {reminders.map(rem => (
@@ -486,7 +473,9 @@ function App() {
                 placeholder="Content..." 
                 style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(0, 0, 0, 0.2)', color: 'white', minHeight: '60px', fontFamily: 'inherit', resize: 'vertical' }} 
               />
-              <button type="submit" style={{ alignSelf: 'flex-end', padding: '8px 16px', background: '#f59e0b' }}>Add Sticky</button>
+              <div style={{ alignSelf: 'flex-end' }}>
+                <SpecularButton type="submit" size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#000000" lineColor="#ffffff" baseColor="#eab308" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>Add Sticky</SpecularButton>
+              </div>
             </form>
             <div className="sticky-notes-grid">
               {stickyNotes.map((note) => (
@@ -502,47 +491,27 @@ function App() {
             </div>
           </div>
 
-          {/* Obsidian Panel */}
-          <div className="section glass-panel">
-            <h2>Obsidian Vault</h2>
-            <form onSubmit={addNote} className="add-chore-form" style={{ flexDirection: 'column', gap: '8px', marginBottom: '15px', alignItems: 'stretch' }}>
-              <input value={newNoteTitle} onChange={(e) => setNewNoteTitle(e.target.value)} placeholder="Sync Note Title..." />
-              <textarea 
-                value={newNoteContent} 
-                onChange={(e) => setNewNoteContent(e.target.value)} 
-                placeholder="Sync Note Content..." 
-                style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(0, 0, 0, 0.2)', color: 'white', minHeight: '60px', fontFamily: 'inherit', resize: 'vertical' }} 
-              />
-              <button type="submit" style={{ alignSelf: 'flex-end', padding: '8px 16px' }}>Sync to GitHub</button>
-            </form>
-            
-            <div style={{ height: '300px', background: 'rgba(0,0,0,0.5)', borderRadius: '12px', overflow: 'hidden', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.1)' }}>
-              {graphData.nodes.length > 0 ? (
-                <ForceGraph2D
-                  graphData={graphData}
-                  width={400}
-                  height={300}
-                  nodeAutoColorBy="group"
-                  nodeLabel="id"
-                  linkDirectionalParticles={2}
-                  linkDirectionalParticleSpeed={0.01}
-                  backgroundColor="transparent"
-                  nodeRelSize={6}
-                />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading Graph...</div>
-              )}
-            </div>
+        </div>
 
-            <ul className="list">
-              {obsidian.map((note, idx) => (
-                <li key={idx} className="data-item">
-                  <strong>{note.title}</strong>
-                  <p className="snippet">{note.snippet}</p>
-                </li>
-              ))}
-              {obsidian.length === 0 && <p className="empty-state">No recent notes found.</p>}
-            </ul>
+        {/* Obsidian Graph (Full Width) */}
+        <div style={{ marginTop: '40px' }}>
+          <h2 style={{ color: '#aaa', fontSize: '18px', marginBottom: '15px' }}>Obsidian Vault Graph</h2>
+          <div style={{ width: '100%', height: '500px', background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(12px)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
+            {graphData.nodes.length > 0 ? (
+              <ForceGraph2D
+                graphData={graphData}
+                width={window.innerWidth > 1200 ? 1160 : window.innerWidth - 40}
+                height={500}
+                nodeAutoColorBy="group"
+                nodeLabel="id"
+                linkDirectionalParticles={2}
+                linkDirectionalParticleSpeed={0.01}
+                backgroundColor="transparent"
+                nodeRelSize={6}
+              />
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading Graph...</div>
+            )}
           </div>
         </div>
       </div>
