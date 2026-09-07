@@ -1,69 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-dark: #0f172a;
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-light: #f8fafc;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Outfit', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #030014;
+    color: #f8fafc;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 }
 
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #000000;
-  color: var(--text-primary);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.glass-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-  padding: 2rem;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-button {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-button:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-}
-
-input {
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid var(--glass-border);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  outline: none;
-  font-size: 1rem;
-}
-
-input:focus {
-  border-color: var(--accent);
+@layer utilities {
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  }
 }
