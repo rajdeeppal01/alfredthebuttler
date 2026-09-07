@@ -46,6 +46,9 @@ function App() {
   const [newReminder, setNewReminder] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -96,6 +99,10 @@ function App() {
     fetchData().then((data) => {
       if (data) autoGreet(data);
     });
+
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const autoGreet = async (contextData: any) => {
@@ -108,7 +115,11 @@ function App() {
       const data = await res.json();
       if (data.greeting) {
         const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.greeting)}`;
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
         const audio = new Audio(audioUrl);
+        audioRef.current = audio;
         audio.play().catch(e => console.log("Autoplay blocked by browser. User must click Morning Rundown to hear it.", e));
       }
     } catch (e) {
@@ -121,7 +132,7 @@ function App() {
     setIsGenerating(true);
 
     try {
-      const contextData = { chores, emails, github, reminders };
+      const contextData = { chores, emails, github, reminders, stickyNotes };
       const res = await fetch(`${API_URL}/generate_rundown`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -130,7 +141,11 @@ function App() {
       const data = await res.json();
       
       const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.greeting)}`;
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       const audio = new Audio(audioUrl);
+      audioRef.current = audio;
       
       audio.oncanplaythrough = () => {
         setIsGenerating(false);
@@ -207,7 +222,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           text: textToSend,
-          context: { chores, emails, github }
+          context: { chores, emails, github, reminders, stickyNotes }
         })
       });
       
@@ -496,16 +511,16 @@ function App() {
         {/* Obsidian Graph (Full Width) */}
         <div style={{ marginTop: '40px' }}>
           <h2 style={{ color: '#aaa', fontSize: '18px', marginBottom: '15px' }}>Obsidian Vault Graph</h2>
-          <div style={{ width: '100%', height: '500px', background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(12px)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
+          <div style={{ width: '100%', height: '600px', background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(12px)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
             {graphData.nodes.length > 0 ? (
               <ForceGraph2D
                 graphData={graphData}
-                width={window.innerWidth > 1200 ? 1160 : window.innerWidth - 40}
-                height={500}
+                width={windowWidth > 1200 ? 1160 : windowWidth - 40}
+                height={600}
                 nodeAutoColorBy="group"
                 nodeLabel="id"
                 linkDirectionalParticles={2}
-                linkDirectionalParticleSpeed={0.01}
+                linkDirectionalParticleSpeed={0.005}
                 backgroundColor="transparent"
                 nodeRelSize={6}
               />
