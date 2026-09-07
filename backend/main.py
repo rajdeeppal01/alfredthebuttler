@@ -56,17 +56,23 @@ def read_root():
 def read_chores():
     if not db:
         return []
-    docs = db.collection("chores").stream()
-    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+    try:
+        docs = db.collection("chores").stream()
+        return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+    except Exception as e:
+        return [{"error": str(e)}]
 
 @app.post("/chores")
 def create_chore(chore: schemas.ChoreCreate):
     if not db:
         return {"error": "Firebase not connected"}
-    doc_ref = db.collection("chores").document()
-    doc_data = {"title": chore.title, "completed": False}
-    doc_ref.set(doc_data)
-    return {"id": doc_ref.id, **doc_data}
+    try:
+        doc_ref = db.collection("chores").document()
+        doc_data = {"title": chore.title, "completed": False}
+        doc_ref.set(doc_data)
+        return {"id": doc_ref.id, **doc_data}
+    except Exception as e:
+        return {"error": str(e)}
 
 class ChoreUpdate(BaseModel):
     completed: bool
@@ -75,39 +81,54 @@ class ChoreUpdate(BaseModel):
 def update_chore(chore_id: str, chore_update: ChoreUpdate):
     if not db:
         return {"error": "Firebase not connected"}
-    doc_ref = db.collection("chores").document(chore_id)
-    doc_ref.update({"completed": chore_update.completed})
-    return {"id": chore_id, "completed": chore_update.completed}
+    try:
+        doc_ref = db.collection("chores").document(chore_id)
+        doc_ref.update({"completed": chore_update.completed})
+        return {"id": chore_id, "completed": chore_update.completed}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.delete("/chores/{chore_id}")
 def delete_chore(chore_id: str):
     if not db:
         return {"error": "Firebase not connected"}
-    db.collection("chores").document(chore_id).delete()
-    return {"status": "deleted"}
+    try:
+        db.collection("chores").document(chore_id).delete()
+        return {"status": "deleted"}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/reminders")
 def read_reminders():
     if not db:
         return []
-    docs = db.collection("reminders").stream()
-    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+    try:
+        docs = db.collection("reminders").stream()
+        return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+    except Exception as e:
+        return [{"error": str(e)}]
 
 @app.post("/reminders")
 def create_reminder(reminder: schemas.ReminderCreate):
     if not db:
         return {"error": "Firebase not connected"}
-    doc_ref = db.collection("reminders").document()
-    doc_data = {"title": reminder.title, "due_date": reminder.due_date}
-    doc_ref.set(doc_data)
-    return {"id": doc_ref.id, **doc_data}
+    try:
+        doc_ref = db.collection("reminders").document()
+        doc_data = {"title": reminder.title, "due_date": reminder.due_date}
+        doc_ref.set(doc_data)
+        return {"id": doc_ref.id, **doc_data}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.delete("/reminders/{reminder_id}")
 def delete_reminder(reminder_id: str):
     if not db:
         return {"error": "Firebase not connected"}
-    db.collection("reminders").document(reminder_id).delete()
-    return {"status": "deleted"}
+    try:
+        db.collection("reminders").document(reminder_id).delete()
+        return {"status": "deleted"}
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/emails")
