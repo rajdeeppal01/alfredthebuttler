@@ -59,19 +59,24 @@ function App() {
 
   const fetchData = async () => {
     try {
-      const [choresRes, emailsRes, githubRes, obsidianRes, remindersRes] = await Promise.all([
-        fetch(`${API_URL}/chores`),
-        fetch(`${API_URL}/emails`),
-        fetch(`${API_URL}/projects/github`),
-        fetch(`${API_URL}/projects/obsidian`),
-        fetch(`${API_URL}/reminders`)
-      ]);
+      const fetchSafely = async (url: string, fallback: any = []) => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return await res.json();
+        } catch (e) {
+          console.error(`Failed to fetch ${url}:`, e);
+          return fallback;
+        }
+      };
 
-      const choresData = await choresRes.json();
-      const emailsData = await emailsRes.json();
-      const githubData = await githubRes.json();
-      const obsidianData = await obsidianRes.json();
-      const remindersData = await remindersRes.json();
+      const [choresData, emailsData, githubData, obsidianData, remindersData] = await Promise.all([
+        fetchSafely(`${API_URL}/chores`),
+        fetchSafely(`${API_URL}/emails`),
+        fetchSafely(`${API_URL}/projects/github`),
+        fetchSafely(`${API_URL}/projects/obsidian`),
+        fetchSafely(`${API_URL}/reminders`)
+      ]);
 
       setChores(choresData);
       setEmails(emailsData);
