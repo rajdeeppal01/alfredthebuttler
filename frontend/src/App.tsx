@@ -4,6 +4,7 @@ import PrivacyPolicy from './PrivacyPolicy';
 import TermsConditions from './TermsConditions';
 // @ts-ignore
 import Particles from './components/Particles';
+import ForceGraph2D from 'react-force-graph-2d';
 
 interface Chore {
   id: string;
@@ -42,8 +43,13 @@ function App() {
   const [github, setGithub] = useState<GithubNotif[]>([]);
   const [obsidian, setObsidian] = useState<ObsidianNote[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [stickyNotes, setStickyNotes] = useState<any[]>([]);
+  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  
   const [newNoteTitle, setNewNoteTitle] = useState('');
   const [newNoteContent, setNewNoteContent] = useState('');
+  const [newStickyTitle, setNewStickyTitle] = useState('');
+  const [newStickyContent, setNewStickyContent] = useState('');
   const [newReminder, setNewReminder] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   
@@ -70,12 +76,14 @@ function App() {
         }
       };
 
-      const [choresData, emailsData, githubData, obsidianData, remindersData] = await Promise.all([
+      const [choresData, emailsData, githubData, obsidianData, remindersData, stickyNotesData, graphDataRes] = await Promise.all([
         fetchSafely(`${API_URL}/chores`),
         fetchSafely(`${API_URL}/emails`),
         fetchSafely(`${API_URL}/projects/github`),
         fetchSafely(`${API_URL}/projects/obsidian`),
-        fetchSafely(`${API_URL}/reminders`)
+        fetchSafely(`${API_URL}/reminders`),
+        fetchSafely(`${API_URL}/sticky_notes`),
+        fetchSafely(`${API_URL}/projects/obsidian/graph`)
       ]);
 
       setChores(choresData);
@@ -83,8 +91,10 @@ function App() {
       setGithub(githubData);
       setObsidian(obsidianData);
       setReminders(remindersData);
+      setStickyNotes(stickyNotesData);
+      setGraphData(graphDataRes);
       
-      return { chores: choresData, emails: emailsData, github: githubData, obsidian: obsidianData, reminders: remindersData };
+      return { chores: choresData, emails: emailsData, github: githubData, obsidian: obsidianData, reminders: remindersData, stickyNotes: stickyNotesData };
     } catch (e) {
       console.error(e);
       return null;
@@ -318,6 +328,24 @@ function App() {
     fetchData();
   };
 
+  const addStickyNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStickyTitle.trim() || !newStickyContent.trim()) return;
+    await fetch(`${API_URL}/sticky_notes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newStickyTitle, content: newStickyContent })
+    });
+    setNewStickyTitle('');
+    setNewStickyContent('');
+    fetchData();
+  };
+
+  const deleteStickyNote = async (id: string) => {
+    await fetch(`${API_URL}/sticky_notes/${id}`, { method: 'DELETE' });
+    fetchData();
+  };
+
   return (
     <>
       <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1 }}>
@@ -447,19 +475,65 @@ function App() {
             </ul>
           </div>
 
+          {/* Sticky Notes Panel */}
+          <div className="section glass-panel sticky-notes-board">
+            <h2>Sticky Notes</h2>
+            <form onSubmit={addStickyNote} className="add-chore-form" style={{ flexDirection: 'column', gap: '8px', marginBottom: '15px', alignItems: 'stretch' }}>
+              <input value={newStickyTitle} onChange={(e) => setNewStickyTitle(e.target.value)} placeholder="Sticky Note Title..." />
+              <textarea 
+                value={newStickyContent} 
+                onChange={(e) => setNewStickyContent(e.target.value)} 
+                placeholder="Content..." 
+                style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(0, 0, 0, 0.2)', color: 'white', minHeight: '60px', fontFamily: 'inherit', resize: 'vertical' }} 
+              />
+              <button type="submit" style={{ alignSelf: 'flex-end', padding: '8px 16px', background: '#f59e0b' }}>Add Sticky</button>
+            </form>
+            <div className="sticky-notes-grid">
+              {stickyNotes.map((note) => (
+                <div key={note.id} className="sticky-note">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <strong style={{ color: '#000' }}>{note.title}</strong>
+                    <button onClick={() => deleteStickyNote(note.id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer' }}>✕</button>
+                  </div>
+                  <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{note.content}</p>
+                </div>
+              ))}
+              {stickyNotes.length === 0 && <p className="empty-state">No sticky notes yet.</p>}
+            </div>
+          </div>
+
           {/* Obsidian Panel */}
           <div className="section glass-panel">
-            <h2>Recent Notes</h2>
+            <h2>Obsidian Vault</h2>
             <form onSubmit={addNote} className="add-chore-form" style={{ flexDirection: 'column', gap: '8px', marginBottom: '15px', alignItems: 'stretch' }}>
-              <input value={newNoteTitle} onChange={(e) => setNewNoteTitle(e.target.value)} placeholder="Note Title..." />
+              <input value={newNoteTitle} onChange={(e) => setNewNoteTitle(e.target.value)} placeholder="Sync Note Title..." />
               <textarea 
                 value={newNoteContent} 
                 onChange={(e) => setNewNoteContent(e.target.value)} 
-                placeholder="Note Content..." 
+                placeholder="Sync Note Content..." 
                 style={{ padding: '10px', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.2)', background: 'rgba(0, 0, 0, 0.2)', color: 'white', minHeight: '60px', fontFamily: 'inherit', resize: 'vertical' }} 
               />
-              <button type="submit" style={{ alignSelf: 'flex-end', padding: '8px 16px' }}>Add Note</button>
+              <button type="submit" style={{ alignSelf: 'flex-end', padding: '8px 16px' }}>Sync to GitHub</button>
             </form>
+            
+            <div style={{ height: '300px', background: 'rgba(0,0,0,0.5)', borderRadius: '12px', overflow: 'hidden', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.1)' }}>
+              {graphData.nodes.length > 0 ? (
+                <ForceGraph2D
+                  graphData={graphData}
+                  width={400}
+                  height={300}
+                  nodeAutoColorBy="group"
+                  nodeLabel="id"
+                  linkDirectionalParticles={2}
+                  linkDirectionalParticleSpeed={0.01}
+                  backgroundColor="transparent"
+                  nodeRelSize={6}
+                />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading Graph...</div>
+              )}
+            </div>
+
             <ul className="list">
               {obsidian.map((note, idx) => (
                 <li key={idx} className="data-item">

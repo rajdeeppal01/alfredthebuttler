@@ -11,7 +11,7 @@ import os
 import schemas
 from integrations.gmail import get_unread_emails
 from integrations.github import get_github_notifications
-from integrations.obsidian import get_recent_obsidian_notes, create_obsidian_note
+from integrations.obsidian import get_recent_obsidian_notes, create_obsidian_note, get_obsidian_graph
 from integrations.voice import generate_audio_stream
 from integrations.ai import process_voice_command
 
@@ -130,6 +130,37 @@ def delete_reminder(reminder_id: str):
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/sticky_notes")
+def read_sticky_notes():
+    if not db:
+        return []
+    try:
+        docs = db.collection("sticky_notes").stream()
+        return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+    except Exception as e:
+        return [{"error": str(e)}]
+
+@app.post("/sticky_notes")
+def create_sticky_note(note: schemas.StickyNoteCreate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        doc_ref = db.collection("sticky_notes").document()
+        doc_data = {"title": note.title, "content": note.content}
+        doc_ref.set(doc_data)
+        return {"id": doc_ref.id, **doc_data}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.delete("/sticky_notes/{note_id}")
+def delete_sticky_note(note_id: str):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        db.collection("sticky_notes").document(note_id).delete()
+        return {"status": "deleted"}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/emails")
 def read_emails():
@@ -142,6 +173,10 @@ def read_github():
 @app.get("/projects/obsidian")
 def read_obsidian():
     return get_recent_obsidian_notes()
+
+@app.get("/projects/obsidian/graph")
+def read_obsidian_graph():
+    return get_obsidian_graph()
 
 @app.post("/projects/obsidian")
 def add_obsidian_note(note: schemas.NoteCreate):

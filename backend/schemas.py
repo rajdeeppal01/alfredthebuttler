@@ -34,3 +34,16 @@ class Reminder(ReminderBase):
 
     class Config:
         from_attributes = True
+
+class StickyNoteBase(BaseModel):
+    title: str
+    content: str
+
+class StickyNoteCreate(StickyNoteBase):
+    pass
+
+class StickyNote(StickyNoteBase):
+    id: str
+
+    class Config:
+        from_attributes = True

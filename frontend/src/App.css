@@ -238,3 +238,35 @@ body {
 .text-link:hover {
   color: white;
 }
+
+.sticky-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.sticky-note {
+  background: #fef08a; /* yellow sticky */
+  padding: 12px;
+  border-radius: 4px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  position: relative;
+  transition: transform 0.2s;
+  min-height: 100px;
+}
+
+.sticky-note:nth-child(even) {
+  background: #fbcfe8; /* pink sticky */
+  transform: rotate(2deg);
+}
+
+.sticky-note:nth-child(3n) {
+  background: #bbf7d0; /* green sticky */
+  transform: rotate(-1.5deg);
+}
+
+.sticky-note:hover {
+  transform: scale(1.05);
+  z-index: 5;
+}
