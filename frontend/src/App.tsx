@@ -420,7 +420,7 @@ function App() {
             </form>
             <ul className="list">
               {reminders.map(rem => (
-                <li key={rem.id} className="data-item">
+                <li key={rem.id} className="data-item reminder-item">
                   <div className="item-info">
                     <strong>{rem.title}</strong>
                     <span className="subtitle">{new Date(rem.due_date).toLocaleString()}</span>

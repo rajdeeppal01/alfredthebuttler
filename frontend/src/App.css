@@ -102,11 +102,19 @@ body {
   gap: 12px;
 }
 
-.data-item {
+.list li.data-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
   padding: 15px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.list li.reminder-item {
+  flex-direction: row;
+  align-items: center;
 }
 
 .data-item strong {
