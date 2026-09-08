@@ -27,12 +27,12 @@ body {
   margin-bottom: 30px;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
 
 .header h1 {
   margin: 0;
-  font-family: 'Great Vibes', cursive;
-  font-size: 48px;
+  font-family: 'Pinyon Script', cursive;
+  font-size: 52px;
   font-weight: 400;
   letter-spacing: 1px;
   color: #f5f5f5;
