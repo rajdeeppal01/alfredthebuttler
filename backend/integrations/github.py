@@ -31,7 +31,7 @@ def get_github_notifications():
                 break
                 
         one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-        tracked_repos = ["cywar", "cybersentinel", "q", "trackrai"]
+        tracked_repos = ["cywar", "cybersentinel", "q", "trackrai", "forgeai", "alfredthebuttler"]
         
         for repo in user.get_repos(type="owner", sort="pushed", direction="desc"):
             if repo.name.lower() in tracked_repos:
