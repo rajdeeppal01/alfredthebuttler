@@ -436,7 +436,14 @@ function App() {
       
       <div className="app-container">
         <header className="header glass-panel">
-          <h1>Assistant Dashboard</h1>
+          <h1>
+            {(() => {
+              const hour = new Date().getHours();
+              if (hour >= 5 && hour < 12) return 'Good morning, Mr. Wayne';
+              if (hour >= 12 && hour < 16) return 'Good afternoon, Mr. Wayne';
+              return 'Good evening, Mr. Wayne';
+            })()}
+          </h1>
           <div style={{ display: 'flex', gap: '10px' }}>
             <SpecularButton 
               className={isListening ? 'pulsing listening' : ''}
