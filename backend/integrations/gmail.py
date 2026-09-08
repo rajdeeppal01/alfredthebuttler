@@ -29,12 +29,14 @@ def fetch_emails(creds, account_name, all_email_summaries):
                 'subject': subject,
                 'snippet': snippet
             })
+        return True # Indicates successful authentication/fetch
     except Exception as error:
-        print(f"An error occurred for account {account_name}: {error}")
+        raise Exception(f"API Error: {error}")
 
 def get_unread_emails():
     all_email_summaries = []
     error_msgs = []
+    auth_success = False
     
     # 1. Check environment variables for tokens (Vercel deployment)
     for env_key, account_name in [('GMAIL_TOKEN_WORK', 'work')]:
@@ -47,26 +49,28 @@ def get_unread_emails():
                 
                 token_data = json.loads(token_str)
                 creds = Credentials.from_authorized_user_info(token_data, SCOPES)
-                fetch_emails(creds, account_name, all_email_summaries)
+                if fetch_emails(creds, account_name, all_email_summaries):
+                    auth_success = True
             except Exception as e:
                 error_msgs.append(f"Env var error ({env_key}): {str(e)}")
         else:
             error_msgs.append(f"{env_key} is empty or not set.")
 
     # 2. Fallback to local files (Local development)
-    if not all_email_summaries:
+    if not auth_success:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         token_path = os.path.join(base_dir, 'token_work.json')
         if os.path.exists(token_path):
             try:
                 creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-                fetch_emails(creds, 'work', all_email_summaries)
+                if fetch_emails(creds, 'work', all_email_summaries):
+                    auth_success = True
             except Exception as e:
                 error_msgs.append(f"Local file error: {str(e)}")
         else:
             error_msgs.append("Local token_work.json not found.")
 
-    if not all_email_summaries:
+    if not auth_success:
         error_details = " | ".join(error_msgs)
         return [{"id": "0", "sender": "System", "subject": "Auth Required", "snippet": f"Debug info: {error_details}"}]
         
