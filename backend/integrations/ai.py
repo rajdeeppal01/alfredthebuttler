@@ -96,13 +96,23 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 
 def generate_greeting(context: dict = None):
     api_key = os.getenv("GEMINI_API_KEY")
+    from datetime import datetime
+    
+    hour = datetime.now().hour
+    if 5 <= hour < 12:
+        time_of_day = "morning"
+    elif 12 <= hour < 16:
+        time_of_day = "afternoon"
+    else:
+        time_of_day = "evening"
+        
     if not api_key:
-        return "Good morning! Please set your Gemini API key to activate my brain."
+        return f"Good {time_of_day}! Please set your Gemini API key to activate my brain."
         
     context_str = json.dumps(context) if context else "No context available."
     prompt = f"""
 You are Alfred, a highly intelligent voice assistant. 
-Generate a short, concise, and professional Morning Rundown greeting for "Mr. Wayne". 
+Generate a short, concise, and professional {time_of_day} rundown greeting for "Mr. Wayne". 
 
 Here is his live dashboard data:
 <context>
@@ -110,7 +120,7 @@ Here is his live dashboard data:
 </context>
 
 Instructions:
-1. Greet him by name ("Greetings Mr. Wayne...").
+1. Greet him by name ("Good {time_of_day} Mr. Wayne...").
 2. Summarize his pending chores.
 3. Check the GitHub data. The data contains your 'Latest Push' and any 'Untouched' tracked repos. Organically call him out if he is neglecting the untouched repos, and mention his latest push! 
 4. Summarize unread emails and Obsidian notes if they exist.
@@ -139,11 +149,12 @@ Instructions:
                 res_body = response.read().decode('utf-8')
                 data = json.loads(res_body)
                 if "candidates" not in data or not data["candidates"]:
-                    return "My AI brain returned an empty response."
+                    return f"My AI brain returned an empty response. Good {time_of_day}, sir."
                 return data["candidates"][0]["content"]["parts"][0]["text"].strip()
         except urllib.error.HTTPError as e:
             continue
         except Exception as e:
             continue
             
-    return "Good morning sir. My AI brain is currently offline due to a connection error with Google."
+    return f"Good {time_of_day} sir. My AI brain is currently offline due to a connection error with Google."
+
