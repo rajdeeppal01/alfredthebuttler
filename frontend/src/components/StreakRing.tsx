@@ -63,7 +63,7 @@ const StreakRing: React.FC<StreakRingProps> = ({ size, strokeWidth, color, progr
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <span style={{ color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>🔥{currentStreak}</span>
+          <span style={{ color: '#fff', fontSize: '24px', fontWeight: 'bold' }}>{currentStreak}</span>
         </div>
       </div>
       <div style={{ marginTop: '12px', textAlign: 'center' }}>
