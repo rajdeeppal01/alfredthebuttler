@@ -590,8 +590,8 @@ function App() {
 
           {/* Sticky Notes Panel */}
           <div className="section glass-panel sticky-notes-board">
-            <h2>Sticky Notes</h2>
-            <form onSubmit={addStickyNote} className="add-chore-form" style={{ flexDirection: 'column', gap: '8px', marginBottom: '15px', alignItems: 'stretch' }}>
+            <h2>Add Sticky Note</h2>
+            <form onSubmit={addStickyNote} className="add-chore-form" style={{ flexDirection: 'column', gap: '8px', marginBottom: '0px', alignItems: 'stretch' }}>
               <input value={newStickyTitle} onChange={(e) => setNewStickyTitle(e.target.value)} placeholder="Sticky Note Title..." />
               <textarea 
                 value={newStickyContent} 
@@ -603,21 +603,24 @@ function App() {
                 <SpecularButton type="submit" size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#000000" lineColor="#ffffff" baseColor="#eab308" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>Add Sticky</SpecularButton>
               </div>
             </form>
-            <div className="sticky-notes-grid">
-              {stickyNotes.map((note) => (
-                <div key={note.id} className="sticky-note">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <strong style={{ color: '#000' }}>{note.title}</strong>
-                    <button onClick={() => deleteStickyNote(note.id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer' }}>✕</button>
-                  </div>
-                  <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{note.content}</p>
-                </div>
-              ))}
-              {stickyNotes.length === 0 && <p className="empty-state">No sticky notes yet.</p>}
-            </div>
           </div>
 
         </div>
+
+        {/* Floating Sticky Notes Container */}
+        {stickyNotes.length > 0 && (
+          <div className="sticky-notes-grid">
+            {stickyNotes.map((note) => (
+              <div key={note.id} className="sticky-note">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <strong style={{ color: '#000' }}>{note.title}</strong>
+                  <button onClick={() => deleteStickyNote(note.id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer' }}>✕</button>
+                </div>
+                <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{note.content}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Obsidian Graph (Full Width) */}
         <div style={{ marginTop: '40px' }}>

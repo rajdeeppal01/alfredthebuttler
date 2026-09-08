@@ -245,20 +245,23 @@ body {
 }
 
 .sticky-notes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 30px;
+  padding: 10px 0;
+  justify-content: center;
 }
 
 .sticky-note {
+  flex: 0 0 220px;
   background: #fef08a; /* yellow sticky */
-  padding: 12px;
+  padding: 16px;
   border-radius: 4px;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  box-shadow: 2px 4px 10px rgba(0,0,0,0.3);
   position: relative;
   transition: transform 0.2s;
-  min-height: 100px;
+  min-height: 150px;
 }
 
 .sticky-note:nth-child(even) {
