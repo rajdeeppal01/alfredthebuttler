@@ -3,6 +3,7 @@ import './App.css';
 import PrivacyPolicy from './PrivacyPolicy';
 import TermsConditions from './TermsConditions';
 import SpecularButton from './components/SpecularButton';
+import StreakRing from './components/StreakRing';
 // @ts-ignore
 import Particles from './components/Particles';
 import ForceGraph2D from 'react-force-graph-2d';
@@ -32,12 +33,22 @@ interface Reminder {
   due_date: string;
 }
 
+interface Streak {
+  id: string;
+  title: string;
+  color: string;
+  current_streak: number;
+  longest_streak: number;
+  last_completed_date: string | null;
+}
+
 function App() {
   const [chores, setChores] = useState<Chore[]>([]);
   const [newChore, setNewChore] = useState('');
   const [emails, setEmails] = useState<Email[]>([]);
   const [github, setGithub] = useState<GithubNotif[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [streaks, setStreaks] = useState<Streak[]>([]);
   const [stickyNotes, setStickyNotes] = useState<any[]>([]);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   
@@ -72,13 +83,14 @@ function App() {
         }
       };
 
-      const [choresData, emailsData, githubData, remindersData, stickyNotesData, graphDataRes] = await Promise.all([
+      const [choresData, emailsData, githubData, remindersData, stickyNotesData, graphDataRes, streaksData] = await Promise.all([
         fetchSafely(`${API_URL}/chores`),
         fetchSafely(`${API_URL}/emails`),
         fetchSafely(`${API_URL}/projects/github`),
         fetchSafely(`${API_URL}/reminders`),
         fetchSafely(`${API_URL}/sticky_notes`),
-        fetchSafely(`${API_URL}/projects/obsidian/graph`)
+        fetchSafely(`${API_URL}/projects/obsidian/graph`),
+        fetchSafely(`${API_URL}/streaks`)
       ]);
 
       setChores(choresData);
@@ -87,8 +99,9 @@ function App() {
       setReminders(remindersData);
       setStickyNotes(stickyNotesData);
       setGraphData(graphDataRes);
+      setStreaks(streaksData);
       
-      return { chores: choresData, emails: emailsData, github: githubData, reminders: remindersData, stickyNotes: stickyNotesData };
+      return { chores: choresData, emails: emailsData, github: githubData, reminders: remindersData, stickyNotes: stickyNotesData, streaks: streaksData };
     } catch (e) {
       console.error(e);
       return null;
@@ -293,6 +306,56 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [chores, emails, github, isGenerating, isPlaying, isListening]);
 
+  const toggleStreak = async (streak: Streak) => {
+    const today = new Date().toISOString().split('T')[0];
+    if (streak.last_completed_date === today) return; // already completed today
+
+    const updated = [...streaks];
+    const index = updated.findIndex(s => s.id === streak.id);
+    
+    // Optimistic update
+    updated[index] = { 
+      ...streak, 
+      current_streak: streak.current_streak + 1, 
+      longest_streak: Math.max(streak.longest_streak, streak.current_streak + 1),
+      last_completed_date: today 
+    };
+    setStreaks(updated);
+
+    try {
+      await fetch(`${API_URL}/streaks/${streak.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ last_completed_date: today })
+      });
+    } catch (e) {
+      console.error('Error toggling streak', e);
+      fetchData(); // revert
+    }
+  };
+
+  const addStreak = async () => {
+    const title = prompt("Enter new habit to track:");
+    if (!title) return;
+    
+    const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    try {
+      const res = await fetch(`${API_URL}/streaks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, color })
+      });
+      if (res.ok) {
+        const newStreak = await res.json();
+        setStreaks([...streaks, newStreak]);
+      }
+    } catch (e) {
+      console.error('Error adding streak', e);
+    }
+  };
+
   const addChore = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newChore.trim()) return;
@@ -418,6 +481,38 @@ function App() {
         )}
 
         <div className="dashboard-grid">
+          {/* Streaks Panel */}
+          <div className="section glass-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h2>Habits & Streaks</h2>
+              <div style={{ width: '80px' }}>
+                <SpecularButton onClick={() => addStreak()} size="sm" radius={12} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>Add</SpecularButton>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center' }}>
+              {streaks.map(streak => {
+                const today = new Date().toISOString().split('T')[0];
+                const isCompletedToday = streak.last_completed_date === today;
+                const progress = isCompletedToday ? 1 : 0;
+                
+                return (
+                  <StreakRing
+                    key={streak.id}
+                    size={80}
+                    strokeWidth={8}
+                    color={streak.color}
+                    progress={progress}
+                    title={streak.title}
+                    currentStreak={streak.current_streak}
+                    longestStreak={streak.longest_streak}
+                    onClick={() => toggleStreak(streak)}
+                  />
+                );
+              })}
+              {streaks.length === 0 && <p className="empty-state">No habits tracked yet.</p>}
+            </div>
+          </div>
+
           {/* Chores Panel */}
           <div className="section glass-panel">
             <h2>Daily Chores</h2>

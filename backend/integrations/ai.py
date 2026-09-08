@@ -29,7 +29,8 @@ Otherwise, just respond conversationally.
 
 Respond ONLY with a valid JSON object matching the exact structure below, with NO markdown formatting, NO backticks, and NO extra text:
 {{
-    "action": "none" | "add_chore" | "send_email" | "check_github",
+    "action": "none" | "add_chore" | "send_email" | "check_github" | "toggle_streak",
+    "title": "Title of chore or streak to interact with, if applicable",
     "response": "Your spoken response here. (If action is check_github, leave response blank, the system will fill it)"
 }}
 """

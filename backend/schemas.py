@@ -47,3 +47,19 @@ class StickyNote(StickyNoteBase):
 
     class Config:
         from_attributes = True
+
+class StreakBase(BaseModel):
+    title: str
+    color: str
+
+class StreakCreate(StreakBase):
+    pass
+
+class Streak(StreakBase):
+    id: str
+    current_streak: int
+    longest_streak: int
+    last_completed_date: Optional[str] = None
+
+    class Config:
+        from_attributes = True

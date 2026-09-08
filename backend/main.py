@@ -98,6 +98,74 @@ def delete_chore(chore_id: str):
     except Exception as e:
         return {"error": str(e)}
 
+# --- Streaks API ---
+
+@app.get("/streaks")
+def read_streaks():
+    if not db:
+        return []
+    try:
+        docs = db.collection("streaks").stream()
+        return [{"id": doc.id, **doc.to_dict()} for doc in docs]
+    except Exception as e:
+        return [{"error": str(e)}]
+
+@app.post("/streaks")
+def create_streak(streak: schemas.StreakCreate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        doc_ref = db.collection("streaks").document()
+        doc_data = {
+            "title": streak.title,
+            "color": streak.color,
+            "current_streak": 0,
+            "longest_streak": 0,
+            "last_completed_date": None
+        }
+        doc_ref.set(doc_data)
+        return {"id": doc_ref.id, **doc_data}
+    except Exception as e:
+        return {"error": str(e)}
+
+class StreakComplete(BaseModel):
+    last_completed_date: str
+
+@app.put("/streaks/{streak_id}")
+def update_streak(streak_id: str, streak_update: StreakComplete):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        doc_ref = db.collection("streaks").document(streak_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return {"error": "Streak not found"}
+        data = doc.to_dict()
+        
+        # Increment streak
+        new_current = data.get("current_streak", 0) + 1
+        new_longest = max(data.get("longest_streak", 0), new_current)
+        
+        update_data = {
+            "current_streak": new_current,
+            "longest_streak": new_longest,
+            "last_completed_date": streak_update.last_completed_date
+        }
+        doc_ref.update(update_data)
+        return {"id": streak_id, **data, **update_data}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.delete("/streaks/{streak_id}")
+def delete_streak(streak_id: str):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        db.collection("streaks").document(streak_id).delete()
+        return {"status": "deleted"}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/reminders")
 def read_reminders():
     if not db:
@@ -208,9 +276,28 @@ def handle_chat(req: schemas.ChatRequest):
         if title and db:
             docs = db.collection("chores").stream()
             for doc in docs:
-                # Basic string match
                 if title in doc.to_dict().get("title", "").lower():
                     db.collection("chores").document(doc.id).delete()
+                    break
+
+    elif action == "toggle_streak":
+        title = intent.get("title", "").lower()
+        if title and db:
+            docs = db.collection("streaks").stream()
+            from datetime import datetime
+            today = datetime.now().strftime("%Y-%m-%d")
+            
+            for doc in docs:
+                data = doc.to_dict()
+                if title in data.get("title", "").lower():
+                    if data.get("last_completed_date") != today:
+                        new_current = data.get("current_streak", 0) + 1
+                        new_longest = max(data.get("longest_streak", 0), new_current)
+                        db.collection("streaks").document(doc.id).update({
+                            "current_streak": new_current,
+                            "longest_streak": new_longest,
+                            "last_completed_date": today
+                        })
                     break
 
     elif action == "add_note":

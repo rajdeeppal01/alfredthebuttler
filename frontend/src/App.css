@@ -71,9 +71,22 @@ body {
 }
 
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 25px;
+  column-count: 3;
+  column-gap: 25px;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid { column-count: 2; }
+}
+@media (max-width: 768px) {
+  .dashboard-grid { column-count: 1; }
+}
+
+.dashboard-grid > .section {
+  break-inside: avoid;
+  margin-bottom: 25px;
+  display: inline-block;
+  width: 100%;
 }
 
 .glass-panel {
