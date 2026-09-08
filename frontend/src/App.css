@@ -71,22 +71,10 @@ body {
 }
 
 .dashboard-grid {
-  column-count: 3;
-  column-gap: 25px;
-}
-
-@media (max-width: 1200px) {
-  .dashboard-grid { column-count: 2; }
-}
-@media (max-width: 768px) {
-  .dashboard-grid { column-count: 1; }
-}
-
-.dashboard-grid > .section {
-  break-inside: avoid;
-  margin-bottom: 25px;
-  display: inline-block;
-  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
 }
 
 .glass-panel {
@@ -96,6 +84,20 @@ body {
   border-radius: 16px;
   padding: 25px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-grid > .section {
+  display: flex;
+  flex-direction: column;
+  height: 400px; /* Uniform height for all cards */
+  overflow: hidden; /* Hide outer overflow */
+}
+
+.dashboard-grid > .section > .list,
+.dashboard-grid > .section > div[style*="flexWrap"] {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 10px;
 }
 
 .section h2 {
