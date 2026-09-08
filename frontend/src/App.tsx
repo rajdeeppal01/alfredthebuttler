@@ -517,12 +517,25 @@ function App() {
                 graphData={graphData}
                 width={windowWidth > 1200 ? 1160 : windowWidth - 40}
                 height={600}
-                nodeAutoColorBy="group"
-                nodeLabel="id"
-                linkDirectionalParticles={2}
-                linkDirectionalParticleSpeed={0.005}
                 backgroundColor="transparent"
-                nodeRelSize={6}
+                linkColor={() => 'rgba(255,255,255,0.2)'}
+                nodeCanvasObject={(node: any, ctx, globalScale) => {
+                  const label = node.id;
+                  const fontSize = 12 / globalScale;
+                  ctx.font = `${fontSize}px Sans-Serif`;
+                  
+                  // Draw Node
+                  ctx.beginPath();
+                  ctx.arc(node.x, node.y, 4, 0, 2 * Math.PI, false);
+                  ctx.fillStyle = '#d1d5db'; // Tailwind gray-300
+                  ctx.fill();
+                
+                  // Draw Text
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'top';
+                  ctx.fillStyle = '#9ca3af'; // Tailwind gray-400
+                  ctx.fillText(label, node.x, node.y + 6);
+                }}
               />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading Graph...</div>
