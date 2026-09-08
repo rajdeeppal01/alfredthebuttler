@@ -95,6 +95,17 @@ function App() {
     }
   };
 
+  const refreshGraph = async () => {
+    try {
+      const res = await fetch(`${API_URL}/projects/obsidian/graph`);
+      if (res.ok) {
+        setGraphData(await res.json());
+      }
+    } catch (e) {
+      console.error("Failed to refresh graph:", e);
+    }
+  };
+
   useEffect(() => {
     fetchData().then((data) => {
       if (data) autoGreet(data);
@@ -510,7 +521,12 @@ function App() {
 
         {/* Obsidian Graph (Full Width) */}
         <div style={{ marginTop: '40px' }}>
-          <h2 style={{ color: '#aaa', fontSize: '18px', marginBottom: '15px' }}>Obsidian Vault Graph</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h2 style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>Obsidian Vault Graph</h2>
+            <div style={{ width: '150px' }}>
+              <SpecularButton onClick={refreshGraph} size="sm" radius={12} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>Sync to GitHub</SpecularButton>
+            </div>
+          </div>
           <div style={{ width: '100%', height: '600px', background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(12px)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
             {graphData.nodes.length > 0 ? (
               <ForceGraph2D
