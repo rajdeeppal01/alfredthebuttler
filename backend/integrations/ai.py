@@ -155,9 +155,15 @@ Instructions:
                     return f"My AI brain returned an empty response. Good {time_of_day}, sir."
                 return data["candidates"][0]["content"]["parts"][0]["text"].strip()
         except urllib.error.HTTPError as e:
+            try:
+                error_body = e.read().decode('utf-8')
+                last_error = f"HTTP Error {e.code}: {error_body}"
+            except:
+                last_error = str(e)
             continue
         except Exception as e:
+            last_error = str(e)
             continue
             
-    return f"Good {time_of_day} sir. My AI brain is currently offline due to a connection error with Google."
+    return f"Good {time_of_day} sir. My AI brain is currently offline. Error details: {last_error}"
 
