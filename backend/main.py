@@ -389,6 +389,12 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/test_chat")
+def test_chat():
+    from integrations.ai import process_voice_command
+    intent = process_voice_command("what was my latest GitHub push?", {"chores": [], "emails": [], "github": [], "reminders": [], "stickyNotes": []})
+    return intent
+
 @app.post("/generate_rundown")
 def generate_rundown_endpoint(context: schemas.ChatRequest):
     from integrations.ai import generate_greeting

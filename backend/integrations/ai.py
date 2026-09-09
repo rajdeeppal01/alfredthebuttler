@@ -91,10 +91,13 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
             except:
                 last_error = str(e)
             
-            # If we get a 404 or 503, try the next model
+            if "3.6-flash" in chosen_model:
+                return {"action": "none", "response": f"HTTP Error on 3.6-flash: {last_error}"}
             continue
         except Exception as e:
             last_error = str(e)
+            if "3.6-flash" in chosen_model:
+                return {"action": "none", "response": f"Exception on 3.6-flash: {last_error} | Raw text: {text_resp[:100]}"}
             continue
 
     return {"action": "none", "response": f"All Google AI models failed (Google's servers might be down). Last error from {chosen_model}: {last_error}"}
