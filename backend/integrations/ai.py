@@ -36,7 +36,7 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 """
 
     # Define a list of models to try in case of high demand / 503 errors
-    fallback_models = ["models/gemini-3.6-flash", "models/gemini-3.6-pro", "models/gemini-2.5-flash", "models/gemini-1.5-pro"]
+    fallback_models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro"]
     last_error = "Unknown error"
     
     for chosen_model in fallback_models:
