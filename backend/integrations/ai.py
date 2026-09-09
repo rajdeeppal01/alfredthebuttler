@@ -96,9 +96,12 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 
 def generate_greeting(context: dict = None):
     api_key = os.getenv("GEMINI_API_KEY")
-    from datetime import datetime
+    from datetime import datetime, timezone, timedelta
     
-    hour = datetime.now().hour
+    # Use IST (+05:30) timezone for Mr. Wayne
+    ist = timezone(timedelta(hours=5, minutes=30))
+    hour = datetime.now(ist).hour
+    
     if 5 <= hour < 12:
         time_of_day = "morning"
     elif 12 <= hour < 16:
