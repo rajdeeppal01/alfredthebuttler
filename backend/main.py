@@ -338,6 +338,34 @@ def list_models():
     except Exception as e:
         return {"error": str(e)}
 
+@app.get("/test_model")
+def test_model():
+    api_key = os.getenv("GEMINI_API_KEY")
+    import urllib.request, json
+    
+    prompt = "Test prompt"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "responseMimeType": "application/json"
+        }
+    }
+    
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode('utf-8'),
+        headers={'Content-Type': 'application/json'},
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        return {"error_code": e.code, "error_body": e.read().decode('utf-8')}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.post("/generate_rundown")
 def generate_rundown_endpoint(context: schemas.ChatRequest):
     from integrations.ai import generate_greeting
