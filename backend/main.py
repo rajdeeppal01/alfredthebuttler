@@ -343,7 +343,30 @@ def test_model():
     api_key = os.getenv("GEMINI_API_KEY")
     import urllib.request, json
     
-    prompt = "Test prompt"
+    prompt = """
+You are Alfred, a highly intelligent voice assistant for a personal dashboard. 
+The user is speaking to you. 
+Determine their intent and return a JSON object.
+
+Here is the LIVE data currently on their dashboard:
+<context>
+{}
+</context>
+
+The user says: "what was my latest GitHub push?"
+
+Analyze the context and provide a response that directly answers the user.
+If they ask to DO something (like add a chore or send an email), determine the action.
+If they ask about their latest GitHub pushes or activity, use the "check_github" action to fetch fresh data.
+Otherwise, just respond conversationally.
+
+Respond ONLY with a valid JSON object matching the exact structure below, with NO markdown formatting, NO backticks, and NO extra text:
+{
+    "action": "none" | "add_chore" | "send_email" | "check_github" | "toggle_streak",
+    "title": "Title of chore or streak to interact with, if applicable",
+    "response": "Your spoken response here. (If action is check_github, leave response blank, the system will fill it)"
+}
+"""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={api_key}"
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
