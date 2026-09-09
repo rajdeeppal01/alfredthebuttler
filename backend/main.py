@@ -326,6 +326,18 @@ def handle_chat(req: schemas.ChatRequest):
             
     return {"response": response_text, "action": action}
 
+@app.get("/list_models")
+def list_models():
+    api_key = os.getenv("GEMINI_API_KEY")
+    import urllib.request, json
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.post("/generate_rundown")
 def generate_rundown_endpoint(context: schemas.ChatRequest):
     from integrations.ai import generate_greeting
