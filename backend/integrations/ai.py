@@ -130,7 +130,7 @@ Instructions:
 5. Remind him of any upcoming Reminders/Meetings if they exist.
 6. Make it conversational, under 4 sentences if possible. Do NOT use markdown or bullet points. This will be spoken via TTS.
 """
-    fallback_models = ["models/gemini-3.6-flash", "models/gemini-3.6-pro", "models/gemini-2.5-flash", "models/gemini-1.5-pro"]
+    fallback_models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro"]
     last_error = "Unknown error"
     
     for chosen_model in fallback_models:
