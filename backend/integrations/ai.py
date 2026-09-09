@@ -36,7 +36,14 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 """
 
     # Define a list of models to try in case of high demand / 503 errors
-    fallback_models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro"]
+    fallback_models = [
+        "models/gemini-1.5-flash-latest",
+        "models/gemini-1.5-flash",
+        "models/gemini-1.5-pro-latest", 
+        "models/gemini-1.5-pro",
+        "models/gemini-pro",
+        "models/gemini-1.0-pro"
+    ]
     last_error = "Unknown error"
     
     for chosen_model in fallback_models:
@@ -130,7 +137,14 @@ Instructions:
 5. Remind him of any upcoming Reminders/Meetings if they exist.
 6. Make it conversational, under 4 sentences if possible. Do NOT use markdown or bullet points. This will be spoken via TTS.
 """
-    fallback_models = ["models/gemini-1.5-flash", "models/gemini-1.5-pro"]
+    fallback_models = [
+        "models/gemini-1.5-flash-latest",
+        "models/gemini-1.5-flash",
+        "models/gemini-1.5-pro-latest", 
+        "models/gemini-1.5-pro",
+        "models/gemini-pro",
+        "models/gemini-1.0-pro"
+    ]
     last_error = "Unknown error"
     
     for chosen_model in fallback_models:
