@@ -296,6 +296,15 @@ function App() {
   };
 
   useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 6 && hour < 18) {
+      document.body.style.backgroundColor = '#230b05'; // Dark warm brownish-red
+    } else {
+      document.body.style.backgroundColor = '#000000';
+    }
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Push-To-Talk on Ctrl+Space
       if (e.ctrlKey && e.code === 'Space') {
