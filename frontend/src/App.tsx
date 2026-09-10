@@ -156,43 +156,6 @@ function App() {
     }
   };
 
-  const triggerRundown = async () => {
-    if (isGenerating || isPlaying) return;
-    setIsGenerating(true);
-
-    try {
-      const contextData = { chores, emails, github, reminders, stickyNotes, streaks };
-      const res = await fetch(`${API_URL}/generate_rundown`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: "generate", context: contextData })
-      });
-      const data = await res.json();
-      
-      const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.greeting)}`;
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      audio.oncanplaythrough = () => {
-        setIsGenerating(false);
-        setIsPlaying(true);
-        audio.play();
-      };
-      
-      audio.onended = () => setIsPlaying(false);
-      audio.onerror = () => {
-        setIsGenerating(false);
-        setIsPlaying(false);
-      };
-    } catch (e) {
-      console.error("Error playing rundown", e);
-      setIsGenerating(false);
-    }
-  };
-
   const recognitionRef = useRef<any>(null);
 
   const startListening = () => {

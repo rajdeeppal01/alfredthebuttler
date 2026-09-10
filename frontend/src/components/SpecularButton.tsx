@@ -131,6 +131,11 @@ const SpecularButton = ({
   autoAnimate = false,
   disabled = false,
   onClick,
+  onMouseDown,
+  onMouseUp,
+  onMouseLeave,
+  onTouchStart,
+  onTouchEnd,
   className = '',
   type = 'button'
 }: SpecularButtonProps) => {
