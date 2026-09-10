@@ -443,7 +443,7 @@ function App() {
               size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               <span style={{ fontFamily: "'Pinyon Script', cursive", fontSize: '26px' }}>
-                {isListening ? 'Listening...' : 'Talk to Alfred (Hold Ctrl+M)'}
+                {isListening ? 'Listening...' : 'Talk to Alfred (Ctrl+M)'}
               </span>
             </SpecularButton>
             <SpecularButton 
@@ -456,7 +456,7 @@ function App() {
               size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               <span style={{ fontFamily: "'Pinyon Script', cursive", fontSize: '26px' }}>
-                {isGenerating ? 'Thinking...' : isPlaying ? 'Speaking...' : "Alfred's Rundown (Hold)"}
+                {isGenerating ? 'Thinking...' : isPlaying ? 'Speaking...' : "Alfred's Rundown"}
               </span>
             </SpecularButton>
           </div>
