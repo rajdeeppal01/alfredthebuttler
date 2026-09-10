@@ -24,6 +24,11 @@ export interface SpecularButtonProps {
   autoAnimate?: boolean;
   disabled?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
+  onMouseDown?: MouseEventHandler<HTMLButtonElement>;
+  onMouseUp?: MouseEventHandler<HTMLButtonElement>;
+  onMouseLeave?: MouseEventHandler<HTMLButtonElement>;
+  onTouchStart?: React.TouchEventHandler<HTMLButtonElement>;
+  onTouchEnd?: React.TouchEventHandler<HTMLButtonElement>;
   className?: string;
   type?: 'button' | 'submit' | 'reset';
 }
@@ -269,6 +274,11 @@ const SpecularButton = ({
       type={type}
       disabled={disabled}
       onClick={onClick}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseLeave}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       className={`specular-button specular-button--${size}${className ? ` ${className}` : ''}`}
       style={
         {

@@ -236,6 +236,12 @@ function App() {
     recognition.start();
   };
 
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
   const submitChat = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!chatInput.trim()) return;
@@ -291,19 +297,29 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Trigger on Ctrl+Space
+      // Push-To-Talk on Ctrl+Space
       if (e.ctrlKey && e.code === 'Space') {
         e.preventDefault();
-        triggerRundown();
+        if (!e.repeat) startListening();
       }
-      // Trigger on Ctrl+M for Mic
+      // Push-To-Talk on Ctrl+M for Mic
       if (e.ctrlKey && e.key.toLowerCase() === 'm') {
         e.preventDefault();
-        startListening();
+        if (!e.repeat) startListening();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.key.toLowerCase() === 'm') {
+         stopListening();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
   }, [chores, emails, github, isGenerating, isPlaying, isListening]);
 
   const toggleStreak = async (streak: Streak) => {
@@ -447,20 +463,28 @@ function App() {
           <div style={{ display: 'flex', gap: '10px' }}>
             <SpecularButton 
               className={isListening ? 'pulsing listening' : ''}
-              onClick={startListening}
+              onMouseDown={startListening}
+              onMouseUp={stopListening}
+              onMouseLeave={stopListening}
+              onTouchStart={startListening}
+              onTouchEnd={stopListening}
               size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               <span style={{ fontFamily: "'Pinyon Script', cursive", fontSize: '26px' }}>
-                {isListening ? 'Listening...' : 'Talk to Alfred (Ctrl+M)'}
+                {isListening ? 'Listening...' : 'Talk to Alfred (Hold Ctrl+M)'}
               </span>
             </SpecularButton>
             <SpecularButton 
               className={`${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
-              onClick={triggerRundown}
+              onMouseDown={startListening}
+              onMouseUp={stopListening}
+              onMouseLeave={stopListening}
+              onTouchStart={startListening}
+              onTouchEnd={stopListening}
               size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               <span style={{ fontFamily: "'Pinyon Script', cursive", fontSize: '26px' }}>
-                {isGenerating ? 'Thinking...' : isPlaying ? 'Speaking...' : "Alfred's Rundown"}
+                {isGenerating ? 'Thinking...' : isPlaying ? 'Speaking...' : "Alfred's Rundown (Hold)"}
               </span>
             </SpecularButton>
           </div>
