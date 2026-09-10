@@ -12,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 def fetch_emails(creds, account_name, all_email_summaries):
     service = build('gmail', 'v1', credentials=creds)
     try:
-        results = service.users().messages().list(userId='me', labelIds=['INBOX', 'UNREAD'], maxResults=3).execute()
+        results = service.users().messages().list(userId='me', labelIds=['INBOX', 'UNREAD'], maxResults=20).execute()
         messages = results.get('messages', [])
         
         for message in messages:
