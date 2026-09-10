@@ -161,7 +161,7 @@ function App() {
     setIsGenerating(true);
 
     try {
-      const contextData = { chores, emails, github, reminders, stickyNotes };
+      const contextData = { chores, emails, github, reminders, stickyNotes, streaks };
       const res = await fetch(`${API_URL}/generate_rundown`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -251,7 +251,7 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           text: textToSend,
-          context: { chores, emails, github, reminders, stickyNotes }
+          context: { chores, emails, github, reminders, stickyNotes, streaks }
         })
       });
       
