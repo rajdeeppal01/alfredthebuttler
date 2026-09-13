@@ -156,6 +156,53 @@ function App() {
     }
   };
 
+  const triggerRundown = async () => {
+    if (isGenerating || isPlaying) return;
+    setIsGenerating(true);
+
+    try {
+      const contextData = { chores, emails, github, reminders, stickyNotes, streaks };
+      const res = await fetch(`${API_URL}/generate_rundown`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: "generate", context: contextData })
+      });
+      
+      if (!res.ok) {
+        setIsGenerating(false);
+        return;
+      }
+      
+      const data = await res.json();
+      
+      if (data.greeting) {
+        const audioUrl = `${API_URL}/voice/play?text=${encodeURIComponent(data.greeting)}`;
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        
+        audio.oncanplaythrough = () => {
+          setIsGenerating(false);
+          setIsPlaying(true);
+          audio.play();
+        };
+        
+        audio.onended = () => setIsPlaying(false);
+        audio.onerror = () => {
+          setIsGenerating(false);
+          setIsPlaying(false);
+        };
+      } else {
+        setIsGenerating(false);
+      }
+    } catch (e) {
+      console.error("Error playing rundown", e);
+      setIsGenerating(false);
+    }
+  };
+
   const recognitionRef = useRef<any>(null);
 
   const startListening = () => {
@@ -269,10 +316,10 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Push-To-Talk on Ctrl+Space
+      // Trigger on Ctrl+Space
       if (e.ctrlKey && e.code === 'Space') {
         e.preventDefault();
-        if (!e.repeat) startListening();
+        if (!e.repeat) triggerRundown();
       }
       // Push-To-Talk on Ctrl+M for Mic
       if (e.ctrlKey && e.key.toLowerCase() === 'm') {
@@ -282,7 +329,7 @@ function App() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space' || e.key.toLowerCase() === 'm') {
+      if (e.key.toLowerCase() === 'm') {
          stopListening();
       }
     };
@@ -448,11 +495,7 @@ function App() {
             </SpecularButton>
             <SpecularButton 
               className={`${isGenerating ? 'pulsing' : ''} ${isPlaying ? 'playing' : ''}`}
-              onMouseDown={startListening}
-              onMouseUp={stopListening}
-              onMouseLeave={stopListening}
-              onTouchStart={startListening}
-              onTouchEnd={stopListening}
+              onClick={triggerRundown}
               size="md" radius={18} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}
             >
               <span style={{ fontFamily: "'Pinyon Script', cursive", fontSize: '26px' }}>
