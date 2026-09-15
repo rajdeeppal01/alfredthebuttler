@@ -220,6 +220,16 @@ def create_sticky_note(note: schemas.StickyNoteCreate):
     except Exception as e:
         return {"error": str(e)}
 
+@app.put("/sticky_notes/{note_id}")
+def update_sticky_note(note_id: str, note: schemas.StickyNoteCreate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        db.collection("sticky_notes").document(note_id).update({"title": note.title, "content": note.content})
+        return {"id": note_id, "title": note.title, "content": note.content}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.delete("/sticky_notes/{note_id}")
 def delete_sticky_note(note_id: str):
     if not db:

@@ -54,6 +54,9 @@ function App() {
   
   const [newStickyTitle, setNewStickyTitle] = useState('');
   const [newStickyContent, setNewStickyContent] = useState('');
+  const [editingStickyId, setEditingStickyId] = useState<string | null>(null);
+  const [editingStickyTitle, setEditingStickyTitle] = useState('');
+  const [editingStickyContent, setEditingStickyContent] = useState('');
   const [newReminder, setNewReminder] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   
@@ -450,7 +453,28 @@ function App() {
 
   const deleteStickyNote = async (id: string) => {
     await fetch(`${API_URL}/sticky_notes/${id}`, { method: 'DELETE' });
-    fetchData();
+    setStickyNotes(stickyNotes.filter(n => n.id !== id));
+  };
+
+  const updateStickyNote = async (id: string) => {
+    if (!editingStickyTitle.trim() || !editingStickyContent.trim()) {
+      setEditingStickyId(null);
+      return;
+    }
+    await fetch(`${API_URL}/sticky_notes/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: editingStickyTitle, content: editingStickyContent })
+    });
+    setStickyNotes(stickyNotes.map(n => n.id === id ? { ...n, title: editingStickyTitle, content: editingStickyContent } : n));
+    setEditingStickyId(null);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, note: any) => {
+    e.preventDefault();
+    setEditingStickyTitle(note.title);
+    setEditingStickyContent(note.content);
+    setEditingStickyId(note.id);
   };
 
   return (
@@ -661,13 +685,32 @@ function App() {
         {stickyNotes.length > 0 && (
           <div className="sticky-notes-grid">
             {stickyNotes.map((note) => (
-              <div key={note.id} className="sticky-note">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <strong style={{ color: '#000' }}>{note.title}</strong>
-                  <button onClick={() => deleteStickyNote(note.id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer' }}>✕</button>
+              editingStickyId === note.id ? (
+                <div key={note.id} className="sticky-note">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <input 
+                      value={editingStickyTitle} 
+                      onChange={(e) => setEditingStickyTitle(e.target.value)} 
+                      style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(0,0,0,0.2)', color: '#000', fontWeight: 'bold', outline: 'none' }} 
+                      autoFocus
+                    />
+                    <button onClick={() => updateStickyNote(note.id)} style={{ background: 'transparent', color: '#22c55e', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer', marginLeft: '5px' }}>✓</button>
+                  </div>
+                  <textarea 
+                    value={editingStickyContent} 
+                    onChange={(e) => setEditingStickyContent(e.target.value)} 
+                    style={{ width: '100%', height: '100px', background: 'transparent', border: 'none', color: '#333', fontSize: '14px', resize: 'none', outline: 'none', whiteSpace: 'pre-wrap' }} 
+                  />
                 </div>
-                <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{note.content}</p>
-              </div>
+              ) : (
+                <div key={note.id} className="sticky-note" onContextMenu={(e) => handleContextMenu(e, note)}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <strong style={{ color: '#000' }}>{note.title}</strong>
+                    <button onClick={() => deleteStickyNote(note.id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer' }}>✕</button>
+                  </div>
+                  <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{note.content}</p>
+                </div>
+              )
             ))}
           </div>
         )}
