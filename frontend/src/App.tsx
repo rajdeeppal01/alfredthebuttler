@@ -42,6 +42,26 @@ interface Streak {
   last_completed_date: string | null;
 }
 
+const renderWithLinks = (text: string) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.split(urlRegex).map((part, i) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a 
+          key={i} 
+          href={part} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style={{ color: '#2563eb', textDecoration: 'underline' }}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 function App() {
   const [chores, setChores] = useState<Chore[]>([]);
   const [newChore, setNewChore] = useState('');
@@ -708,7 +728,7 @@ function App() {
                     <strong style={{ color: '#000' }}>{note.title}</strong>
                     <button onClick={() => deleteStickyNote(note.id)} style={{ background: 'transparent', color: '#dc2626', border: 'none', padding: 0, fontSize: '18px', cursor: 'pointer' }}>✕</button>
                   </div>
-                  <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{note.content}</p>
+                  <p style={{ color: '#333', fontSize: '14px', margin: 0, whiteSpace: 'pre-wrap' }}>{renderWithLinks(note.content)}</p>
                 </div>
               )
             ))}
