@@ -264,6 +264,8 @@ body {
 
 .sticky-note {
   flex: 0 0 220px;
+  width: 220px;
+  max-width: 220px;
   background: #fef08a; /* yellow sticky */
   padding: 16px;
   border-radius: 4px;
@@ -271,6 +273,9 @@ body {
   position: relative;
   transition: transform 0.2s;
   min-height: 150px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .sticky-note:nth-child(even) {
