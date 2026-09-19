@@ -12,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 def fetch_emails(creds, account_name, all_email_summaries):
     service = build('gmail', 'v1', credentials=creds)
     try:
-        results = service.users().messages().list(userId='me', labelIds=['INBOX', 'UNREAD'], maxResults=20).execute()
+        results = service.users().messages().list(userId='me', q="is:unread in:inbox category:primary", maxResults=20).execute()
         messages = results.get('messages', [])
         
         for message in messages:
@@ -52,7 +52,8 @@ def get_unread_emails():
                 if fetch_emails(creds, account_name, all_email_summaries):
                     auth_success = True
             except Exception as e:
-                error_msgs.append(f"Env var error ({env_key}): {str(e)}")
+                debug_info = f"Loaded Token Expiry: {token_data.get('expiry', 'None')} | Token Start: {token_data.get('token', '')[:10]} | Error: {str(e)}"
+                error_msgs.append(f"Env var error ({env_key}): {debug_info}")
         else:
             error_msgs.append(f"{env_key} is empty or not set.")
 
