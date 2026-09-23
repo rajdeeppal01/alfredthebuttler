@@ -36,9 +36,9 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
 """
 
     fallback_models = [
-        "models/gemini-1.5-flash",
-        "models/gemini-1.5-pro",
-        "models/gemini-1.0-pro"
+        "models/gemini-3.8-flash",
+        "models/gemini-3.7-flash",
+        "models/gemini-3.6-flash"
     ]
     last_error = "Unknown error"
     
@@ -137,9 +137,9 @@ Instructions:
 6. Make it conversational, under 4 sentences if possible. Do NOT use markdown or bullet points. This will be spoken via TTS.
 """
     fallback_models = [
-        "models/gemini-1.5-flash",
-        "models/gemini-1.5-pro",
-        "models/gemini-1.0-pro"
+        "models/gemini-3.8-flash",
+        "models/gemini-3.7-flash",
+        "models/gemini-3.6-flash"
     ]
     last_error = "Unknown error"
     
