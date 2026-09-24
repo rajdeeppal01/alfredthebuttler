@@ -38,7 +38,8 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
     fallback_models = [
         "models/gemini-3.8-flash",
         "models/gemini-3.7-flash",
-        "models/gemini-3.6-flash"
+        "models/gemini-3.6-flash",
+        "models/antigravity-preview-latest"
     ]
     last_error = "Unknown error"
     
@@ -139,7 +140,8 @@ Instructions:
     fallback_models = [
         "models/gemini-3.8-flash",
         "models/gemini-3.7-flash",
-        "models/gemini-3.6-flash"
+        "models/gemini-3.6-flash",
+        "models/antigravity-preview-latest"
     ]
     last_error = "Unknown error"
     
