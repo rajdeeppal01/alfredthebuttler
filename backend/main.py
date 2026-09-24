@@ -382,24 +382,9 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
         req_list = urllib.request.Request(url_list)
         with urllib.request.urlopen(req_list) as resp:
             models_data = json.loads(resp.read().decode('utf-8'))
-            models = [m['name'] for m in models_data.get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', [])]
+            return models_data
     except Exception as e:
         return {"error": f"Failed to list models: {str(e)}"}
-        
-    results = {}
-    for m in models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/{m}:generateContent?key={api_key}"
-        payload = {"contents": [{"parts": [{"text": "hello"}]}]}
-        req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'}, method='POST')
-        try:
-            with urllib.request.urlopen(req) as resp:
-                results[m] = "SUCCESS"
-        except urllib.error.HTTPError as e:
-            results[m] = e.read().decode('utf-8')
-        except Exception as e:
-            results[m] = str(e)
-            
-    return results
 
 @app.get("/test_chat")
 def test_chat():
