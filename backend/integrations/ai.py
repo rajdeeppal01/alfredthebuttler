@@ -39,7 +39,7 @@ Respond ONLY with a valid JSON object matching the exact structure below, with N
         "models/gemini-3.8-flash",
         "models/gemini-3.7-flash",
         "models/gemini-3.6-flash",
-        "models/antigravity-preview-latest"
+        "models/deep-research-max-preview-04-2026"
     ]
     last_error = "Unknown error"
     
@@ -141,7 +141,7 @@ Instructions:
         "models/gemini-3.8-flash",
         "models/gemini-3.7-flash",
         "models/gemini-3.6-flash",
-        "models/antigravity-preview-latest"
+        "models/deep-research-max-preview-04-2026"
     ]
     last_error = "Unknown error"
     
