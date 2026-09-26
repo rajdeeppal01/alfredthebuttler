@@ -9,9 +9,10 @@ interface StreakRingProps {
   currentStreak: number;
   longestStreak: number;
   onClick: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-const StreakRing: React.FC<StreakRingProps> = ({ size, strokeWidth, color, progress, title, currentStreak, longestStreak, onClick }) => {
+const StreakRing: React.FC<StreakRingProps> = ({ size, strokeWidth, color, progress, title, currentStreak, longestStreak, onClick, onContextMenu }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - progress * circumference;
@@ -19,6 +20,7 @@ const StreakRing: React.FC<StreakRingProps> = ({ size, strokeWidth, color, progr
   return (
     <div 
       onClick={onClick}
+      onContextMenu={onContextMenu}
       style={{ 
         display: 'flex', 
         flexDirection: 'column', 

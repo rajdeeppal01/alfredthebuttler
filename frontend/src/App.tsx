@@ -392,6 +392,39 @@ function App() {
     }
   };
 
+  const manualUpdateStreak = async (streak: Streak) => {
+    const input = prompt(`Enter new streak number for ${streak.title}:`, streak.current_streak.toString());
+    if (input === null) return;
+    const newStreakVal = parseInt(input, 10);
+    if (isNaN(newStreakVal) || newStreakVal < 0) {
+      alert("Please enter a valid positive number");
+      return;
+    }
+
+    const updated = [...streaks];
+    const index = updated.findIndex(s => s.id === streak.id);
+    if (index !== -1) {
+      updated[index] = {
+        ...streak,
+        current_streak: newStreakVal,
+        longest_streak: Math.max(streak.longest_streak, newStreakVal)
+      };
+      setStreaks(updated);
+    }
+
+    try {
+      await fetch(`${API_URL}/streaks/${streak.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ current_streak: newStreakVal }),
+      });
+    } catch (e) {
+      console.error('Error updating streak manually', e);
+    }
+  };
+
   const addStreak = async () => {
     const title = prompt("Enter new habit to track:");
     if (!title) return;
@@ -600,6 +633,10 @@ function App() {
                     currentStreak={streak.current_streak}
                     longestStreak={streak.longest_streak}
                     onClick={() => toggleStreak(streak)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      manualUpdateStreak(streak);
+                    }}
                   />
                 );
               })}

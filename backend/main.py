@@ -131,6 +131,9 @@ def create_streak(streak: schemas.StreakCreate):
 class StreakComplete(BaseModel):
     last_completed_date: str
 
+class StreakManualUpdate(BaseModel):
+    current_streak: int
+
 @app.put("/streaks/{streak_id}")
 def update_streak(streak_id: str, streak_update: StreakComplete):
     if not db:
@@ -150,6 +153,29 @@ def update_streak(streak_id: str, streak_update: StreakComplete):
             "current_streak": new_current,
             "longest_streak": new_longest,
             "last_completed_date": streak_update.last_completed_date
+        }
+        doc_ref.update(update_data)
+        return {"id": streak_id, **data, **update_data}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.patch("/streaks/{streak_id}")
+def manual_update_streak(streak_id: str, streak_update: StreakManualUpdate):
+    if not db:
+        return {"error": "Firebase not connected"}
+    try:
+        doc_ref = db.collection("streaks").document(streak_id)
+        doc = doc_ref.get()
+        if not doc.exists:
+            return {"error": "Streak not found"}
+        data = doc.to_dict()
+        
+        new_current = streak_update.current_streak
+        new_longest = max(data.get("longest_streak", 0), new_current)
+        
+        update_data = {
+            "current_streak": new_current,
+            "longest_streak": new_longest
         }
         doc_ref.update(update_data)
         return {"id": streak_id, **data, **update_data}
