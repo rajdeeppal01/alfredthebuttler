@@ -11,7 +11,7 @@
   - The dashboard automatically adapts to the time of day, displaying a deep, warm hue during the day (6 AM - 6 PM) and seamlessly transitioning to a sleek, solid black for the night.
   - Time-aware greetings ("Good morning, Mr. Wayne").
 - **Productivity & Life Tracking**
-  - **Habit & Streak Tracker:** Track daily habits with an integrated streak counter. Includes a "Freeze" mechanic to preserve streaks on days you can't complete them (e.g., when the gym is closed).
+  - **Habit & Streak Tracker:** Track daily habits with an integrated streak counter. Includes a "Freeze" mechanic to preserve streaks on days you can't complete them, and manual right-click overrides.
   - **GitHub Integration:** Alfred monitors your latest GitHub pushes and commits to keep you up-to-date with your codebase progress.
   - **Email Monitoring:** Connects to your inbox to summarize and track unread emails.
   - **Sticky Notes & Reminders:** Keep track of quick thoughts and important upcoming tasks.
@@ -20,8 +20,8 @@
 
 - **Frontend:** React, TypeScript, Vite, TailwindCSS
 - **UI Details:** Custom WebGL shaders (`ogl`) for dynamic `SpecularButton` lighting and hover effects. 
-- **Backend:** Python (FastAPI / Vercel Serverless)
-- **AI Core:** Google Gemini 1.5 Pro / Flash models for intelligent context parsing and conversational abilities.
+- **Backend:** Python (FastAPI / Vercel Serverless) with Firebase Firestore database.
+- **AI Core:** Google Gemini 1.5 Pro / Flash models (with Deep Research Max fallback) for intelligent context parsing and conversational abilities.
 - **Voice:** Web Speech API for dictation and TTS (Text-to-Speech) for spoken rundowns.
 
 ## 🚀 Getting Started
