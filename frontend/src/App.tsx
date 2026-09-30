@@ -80,7 +80,7 @@ function App() {
   const [newReminder, setNewReminder] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
   const [isPlaying, setIsPlaying] = useState(false);
@@ -149,10 +149,6 @@ function App() {
     fetchData().then((data) => {
       if (data) autoGreet(data);
     });
-
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const autoGreet = async (contextData: any) => {
