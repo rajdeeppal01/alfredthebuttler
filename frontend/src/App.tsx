@@ -6,7 +6,7 @@ import SpecularButton from './components/SpecularButton';
 import StreakRing from './components/StreakRing';
 // @ts-ignore
 import Particles from './components/Particles';
-import ForceGraph2D from 'react-force-graph-2d';
+// Removed ForceGraph2D import
 
 interface Chore {
   id: string;
@@ -70,7 +70,7 @@ function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [streaks, setStreaks] = useState<Streak[]>([]);
   const [stickyNotes, setStickyNotes] = useState<any[]>([]);
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+
   
   const [newStickyTitle, setNewStickyTitle] = useState('');
   const [newStickyContent, setNewStickyContent] = useState('');
@@ -106,13 +106,12 @@ function App() {
         }
       };
 
-      const [choresData, emailsData, githubData, remindersData, stickyNotesData, graphDataRes, streaksData] = await Promise.all([
+      const [choresData, emailsData, githubData, remindersData, stickyNotesData, streaksData] = await Promise.all([
         fetchSafely(`${API_URL}/chores`),
         fetchSafely(`${API_URL}/emails`),
         fetchSafely(`${API_URL}/projects/github`),
         fetchSafely(`${API_URL}/reminders`),
         fetchSafely(`${API_URL}/sticky_notes`),
-        fetchSafely(`${API_URL}/projects/obsidian/graph`),
         fetchSafely(`${API_URL}/streaks`)
       ]);
 
@@ -121,7 +120,6 @@ function App() {
       setGithub(githubData);
       setReminders(remindersData);
       setStickyNotes(stickyNotesData);
-      setGraphData(graphDataRes);
       setStreaks(streaksData);
       
       return { chores: choresData, emails: emailsData, github: githubData, reminders: remindersData, stickyNotes: stickyNotesData, streaks: streaksData };
@@ -133,15 +131,15 @@ function App() {
 
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const refreshGraph = async () => {
+  const refreshGithubStats = async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch(`${API_URL}/projects/obsidian/graph`);
+      const res = await fetch(`${API_URL}/projects/github`);
       if (res.ok) {
-        setGraphData(await res.json());
+        setGithub(await res.json());
       }
     } catch (e) {
-      console.error("Failed to refresh graph:", e);
+      console.error("Failed to refresh Github stats:", e);
     } finally {
       setIsSyncing(false);
     }
@@ -772,43 +770,30 @@ function App() {
           </div>
         )}
 
-        {/* Obsidian Graph (Full Width) */}
+        {/* GitHub Live Stats (Replaced Obsidian Graph) */}
         <div style={{ marginTop: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h2 style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>Obsidian Vault Graph</h2>
+            <h2 style={{ color: '#aaa', fontSize: '18px', margin: 0 }}>GitHub Live Activity</h2>
             <div style={{ width: '150px' }}>
-              <SpecularButton onClick={refreshGraph} disabled={isSyncing} size="sm" radius={12} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>{isSyncing ? 'Syncing...' : 'Sync to GitHub'}</SpecularButton>
+              <SpecularButton onClick={refreshGithubStats} disabled={isSyncing} size="sm" radius={12} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>{isSyncing ? 'Syncing...' : 'Sync GitHub'}</SpecularButton>
             </div>
           </div>
-          <div style={{ width: '100%', height: '600px', background: 'rgba(20,20,20,0.6)', backdropFilter: 'blur(12px)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}>
-            {graphData.nodes.length > 0 ? (
-              <ForceGraph2D
-                graphData={graphData}
-                width={windowWidth > 1200 ? 1160 : windowWidth - 40}
-                height={600}
-                backgroundColor="transparent"
-                linkColor={() => 'rgba(255,255,255,0.2)'}
-                nodeCanvasObject={(node: any, ctx, globalScale) => {
-                  const label = node.id;
-                  const fontSize = 12 / globalScale;
-                  ctx.font = `${fontSize}px Sans-Serif`;
-                  
-                  // Draw Node
-                  ctx.beginPath();
-                  ctx.arc(node.x, node.y, 4, 0, 2 * Math.PI, false);
-                  ctx.fillStyle = '#d1d5db'; // Tailwind gray-300
-                  ctx.fill();
-                
-                  // Draw Text
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'top';
-                  ctx.fillStyle = '#9ca3af'; // Tailwind gray-400
-                  ctx.fillText(label, node.x, node.y + 6);
-                }}
-              />
-            ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading Graph...</div>
-            )}
+          <div style={{ width: '100%', height: '180px', display: 'flex', gap: '20px' }}>
+            <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Pushes Today</span>
+              <span style={{ fontSize: '56px', fontWeight: 'bold', color: '#fff', textShadow: '0 4px 16px rgba(255,255,255,0.2)' }}>
+                {github.find(n => n.type === 'Daily Pushes')?.title || '0'}
+              </span>
+            </div>
+            <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 20px' }}>
+              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Latest Push</span>
+              <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#fff' }}>
+                {github.find(n => n.type === 'Latest Push')?.repository || 'None'}
+              </span>
+              <span style={{ fontSize: '14px', color: '#aaa', marginTop: '8px', maxWidth: '80%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {github.find(n => n.type === 'Latest Push')?.title || 'No recent pushes'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

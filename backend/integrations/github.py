@@ -18,17 +18,37 @@ def get_github_notifications():
         events = g.get_user(my_username).get_events()
         
         results = []
+        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        daily_pushes = 0
+        latest_push = None
         
         for event in events:
+            event_time = event.created_at.replace(tzinfo=timezone.utc)
             if event.type == "PushEvent":
-                commits = event.payload.get("commits", [])
-                latest_commit_msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
-                results.append({
-                    "repository": event.repo.name,
-                    "title": latest_commit_msg,
-                    "type": "Latest Push"
-                })
+                if event_time >= today_start:
+                    daily_pushes += 1
+                if not latest_push:
+                    commits = event.payload.get("commits", [])
+                    msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
+                    latest_push = {
+                        "repository": event.repo.name,
+                        "title": msg,
+                        "type": "Latest Push"
+                    }
+            
+            # Since events are chronological descending, if we go past today we can't break if we haven't found the latest push, but typically we find it quickly.
+            # We must iterate far enough to count all of today's pushes.
+            if event_time < today_start and latest_push:
                 break
+                
+        if latest_push:
+            results.append(latest_push)
+            
+        results.append({
+            "repository": "N/A",
+            "title": str(daily_pushes),
+            "type": "Daily Pushes"
+        })
                 
         one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
         tracked_repos = ["cywar", "cybersentinel", "q", "trackrai", "forgeai", "alfredthebuttler"]
