@@ -14,13 +14,6 @@ from integrations.github import get_github_notifications
 from integrations.obsidian import get_recent_obsidian_notes, create_obsidian_note, get_obsidian_graph
 from integrations.voice import generate_audio_stream
 from integrations.ai import process_voice_command
-
-import asyncio
-try:
-    from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager
-except ImportError:
-    GlobalSystemMediaTransportControlsSessionManager = None
-
 import json
 
 # Initialize Firebase
@@ -430,29 +423,16 @@ def generate_rundown_endpoint(context: schemas.ChatRequest):
     greeting = generate_greeting(context.context)
     return {"greeting": greeting}
 
-async def get_current_media_info():
-    if not GlobalSystemMediaTransportControlsSessionManager:
-        return None
-    try:
-        sessions = await GlobalSystemMediaTransportControlsSessionManager.request_async()
-        current_session = sessions.get_current_session()
-        if current_session:
-            info = await current_session.try_get_media_properties_async()
-            status = current_session.get_playback_info().playback_status
-            return {
-                "title": info.title,
-                "artist": info.artist,
-                "is_playing": status == 4 # 4 means playing
-            }
-    except Exception as e:
-        print(f"Media Info Error: {e}")
-    return None
-
 @app.get("/now_playing")
-async def now_playing():
-    media = await get_current_media_info()
-    if media:
-        return media
+def now_playing():
+    if not db:
+        return {"title": "Nothing playing", "artist": "", "is_playing": False}
+    try:
+        doc = db.collection("system").document("now_playing").get()
+        if doc.exists:
+            return doc.to_dict()
+    except Exception as e:
+        print(f"Firebase Error: {e}")
     return {"title": "Nothing playing", "artist": "", "is_playing": False}
 
 if __name__ == "__main__":
