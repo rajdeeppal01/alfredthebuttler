@@ -426,14 +426,14 @@ def generate_rundown_endpoint(context: schemas.ChatRequest):
 @app.get("/now_playing")
 def now_playing():
     if not db:
-        return {"title": "Nothing playing", "artist": "", "is_playing": False}
+        return {"title": "Lock In", "artist": "Deep work mode...", "is_playing": False}
     try:
         doc = db.collection("system").document("now_playing").get()
         if doc.exists:
             return doc.to_dict()
     except Exception as e:
         print(f"Firebase Error: {e}")
-    return {"title": "Nothing playing", "artist": "", "is_playing": False}
+    return {"title": "Lock In", "artist": "Deep work mode...", "is_playing": False}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

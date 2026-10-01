@@ -70,7 +70,8 @@ function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [streaks, setStreaks] = useState<Streak[]>([]);
   const [stickyNotes, setStickyNotes] = useState<any[]>([]);
-  const [nowPlaying, setNowPlaying] = useState<{title: string, artist: string, is_playing: boolean, thumbnail?: string}>({ title: 'Nothing playing', artist: '', is_playing: false, thumbnail: '' });
+  const [nowPlaying, setNowPlaying] = useState<{title: string, artist: string, is_playing: boolean, thumbnail?: string}>({ title: 'Lock In', artist: 'Deep work mode...', is_playing: false, thumbnail: '' });
+
 
   
   const [newStickyTitle, setNewStickyTitle] = useState('');
@@ -114,7 +115,7 @@ function App() {
         fetchSafely(`${API_URL}/reminders`),
         fetchSafely(`${API_URL}/sticky_notes`),
         fetchSafely(`${API_URL}/streaks`),
-        fetchSafely(`${API_URL}/now_playing`, { title: 'Nothing playing', artist: '', is_playing: false })
+        fetchSafely(`${API_URL}/now_playing`, { title: 'Lock In', artist: 'Deep work mode...', is_playing: false })
       ]);
 
       setChores(choresData);
@@ -691,7 +692,7 @@ function App() {
             )}
             
             <strong style={{ fontSize: '20px', color: '#fff', marginBottom: '8px', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nowPlaying.title}</strong>
-            <span style={{ fontSize: '14px', color: '#aaa' }}>{nowPlaying.artist || 'Waiting for media...'}</span>
+            <span style={{ fontSize: '14px', color: '#aaa' }}>{nowPlaying.artist || 'Deep work mode...'}</span>
             
             <style>{`
               @keyframes particleWave {
