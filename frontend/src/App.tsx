@@ -832,14 +832,22 @@ function App() {
           </div>
           <div style={{ width: '100%', height: '180px', display: 'flex', gap: '20px' }}>
             <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Pushes Today</span>
+              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Contributions Today</span>
               <span style={{ fontSize: '56px', fontWeight: 'bold', color: '#fff', textShadow: '0 4px 16px rgba(255,255,255,0.2)' }}>
                 {github.find(n => n.type === 'Daily Pushes')?.title || '0'}
               </span>
             </div>
+            
+            <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Total Contributions</span>
+              <span style={{ fontSize: '56px', fontWeight: 'bold', color: '#22c55e', textShadow: '0 4px 16px rgba(34, 197, 94, 0.4)' }}>
+                {github.find(n => n.type === 'Total Contributions')?.title || '0'}
+              </span>
+            </div>
+
             <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 20px' }}>
               <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Latest Push</span>
-              <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#fff' }}>
+              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>
                 {github.find(n => n.type === 'Latest Push')?.repository || 'None'}
               </span>
               <span style={{ fontSize: '14px', color: '#aaa', marginTop: '8px', maxWidth: '80%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

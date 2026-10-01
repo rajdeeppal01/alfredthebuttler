@@ -22,6 +22,7 @@ def get_github_notifications():
           user(login: $login) {
             contributionsCollection {
               contributionCalendar {
+                totalContributions
                 weeks {
                   contributionDays {
                     contributionCount
@@ -39,9 +40,12 @@ def get_github_notifications():
         response = requests.post("https://api.github.com/graphql", json={"query": query, "variables": variables}, headers=headers)
         
         daily_pushes = 0
+        total_contributions = 0
         if response.status_code == 200:
             data = response.json()
-            weeks = data.get("data", {}).get("user", {}).get("contributionsCollection", {}).get("contributionCalendar", {}).get("weeks", [])
+            calendar = data.get("data", {}).get("user", {}).get("contributionsCollection", {}).get("contributionCalendar", {})
+            total_contributions = calendar.get("totalContributions", 0)
+            weeks = calendar.get("weeks", [])
             ist_timezone = timezone(timedelta(hours=5, minutes=30))
             today_str = datetime.now(ist_timezone).strftime("%Y-%m-%d")
             
@@ -59,8 +63,9 @@ def get_github_notifications():
             if event.type == "PushEvent":
                 commits = event.payload.get("commits", [])
                 msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
+                repo_name = event.repo.name.split("/")[-1] if event.repo.name else "Unknown"
                 latest_push = {
-                    "repository": event.repo.name,
+                    "repository": repo_name,
                     "title": msg,
                     "type": "Latest Push"
                 }
@@ -74,6 +79,12 @@ def get_github_notifications():
             "repository": "N/A",
             "title": str(daily_pushes),
             "type": "Daily Pushes"
+        })
+        
+        results.append({
+            "repository": "N/A",
+            "title": str(total_contributions),
+            "type": "Total Contributions"
         })
                 
         one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
