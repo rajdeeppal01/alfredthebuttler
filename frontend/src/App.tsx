@@ -668,14 +668,25 @@ function App() {
               }} />
             ) : (
               <div style={{
-                width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(135deg, #1db954 0%, #191414 100%)',
+                width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(20,20,30,1) 0%, rgba(5,5,10,1) 100%)',
                 display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px',
-                boxShadow: nowPlaying.is_playing ? '0 0 30px rgba(29, 185, 84, 0.4)' : 'none',
+                boxShadow: nowPlaying.is_playing ? '0 0 30px rgba(99, 102, 241, 0.4)' : 'inset 0 0 20px rgba(0,0,0,0.8)',
+                border: '1px solid rgba(255,255,255,0.05)',
                 animation: nowPlaying.is_playing ? 'pulse 2s infinite' : 'none'
               }}>
-                <svg width="50" height="50" viewBox="0 0 24 24" fill="white">
-                  <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.5 14.5c-.2.33-.63.44-.96.24-2.63-1.6-5.95-1.96-9.84-1.07-.36.08-.72-.14-.8-.5-.08-.36.14-.72.5-.8 4.3-.98 8.04-.57 11.02 1.25.33.2.44.63.24.96zm1.36-3.23c-.25.4-.76.54-1.16.29-3.03-1.87-7.66-2.42-10.8-1.32-.46.16-.95-.08-1.11-.53-.16-.45.08-.95.53-1.11 3.6-1.27 8.7-0.65 12.24 1.52.4.25.54.76.29 1.15zm.13-3.38c-3.64-2.16-9.65-2.36-13.1-1.3-.54.16-1.1-.14-1.26-.68-.16-.54.14-1.1.68-1.26 3.96-1.2 10.64-.96 14.82 1.5.48.28.64.9.36 1.38-.28.48-.9.64-1.38.36z" />
-                </svg>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background: '#6366f1',
+                      boxShadow: '0 0 10px #6366f1, 0 0 20px #8b5cf6',
+                      animation: nowPlaying.is_playing ? `particleWave 1.2s ease-in-out infinite` : 'none',
+                      animationDelay: `${i * 0.15}s`
+                    }} />
+                  ))}
+                </div>
               </div>
             )}
             
@@ -683,10 +694,14 @@ function App() {
             <span style={{ fontSize: '14px', color: '#aaa' }}>{nowPlaying.artist || 'Waiting for media...'}</span>
             
             <style>{`
+              @keyframes particleWave {
+                0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+                50% { transform: translateY(-12px) scale(1.6); opacity: 1; background: #a855f7; }
+              }
               @keyframes pulse {
-                0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.7); }
-                70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(29, 185, 84, 0); }
-                100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(29, 185, 84, 0); }
+                0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+                70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+                100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
               }
             `}</style>
           </div>
