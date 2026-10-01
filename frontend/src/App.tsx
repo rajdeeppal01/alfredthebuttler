@@ -70,6 +70,7 @@ function App() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [streaks, setStreaks] = useState<Streak[]>([]);
   const [stickyNotes, setStickyNotes] = useState<any[]>([]);
+  const [nowPlaying, setNowPlaying] = useState<{title: string, artist: string, is_playing: boolean}>({ title: 'Nothing playing', artist: '', is_playing: false });
 
   
   const [newStickyTitle, setNewStickyTitle] = useState('');
@@ -106,13 +107,14 @@ function App() {
         }
       };
 
-      const [choresData, emailsData, githubData, remindersData, stickyNotesData, streaksData] = await Promise.all([
+      const [choresData, emailsData, githubData, remindersData, stickyNotesData, streaksData, nowPlayingData] = await Promise.all([
         fetchSafely(`${API_URL}/chores`),
         fetchSafely(`${API_URL}/emails`),
         fetchSafely(`${API_URL}/projects/github`),
         fetchSafely(`${API_URL}/reminders`),
         fetchSafely(`${API_URL}/sticky_notes`),
-        fetchSafely(`${API_URL}/streaks`)
+        fetchSafely(`${API_URL}/streaks`),
+        fetchSafely(`${API_URL}/now_playing`, { title: 'Nothing playing', artist: '', is_playing: false })
       ]);
 
       setChores(choresData);
@@ -121,6 +123,7 @@ function App() {
       setReminders(remindersData);
       setStickyNotes(stickyNotesData);
       setStreaks(streaksData);
+      setNowPlaying(nowPlayingData);
       
       return { chores: choresData, emails: emailsData, github: githubData, reminders: remindersData, stickyNotes: stickyNotesData, streaks: streaksData };
     } catch (e) {
@@ -149,6 +152,17 @@ function App() {
     fetchData().then((data) => {
       if (data) autoGreet(data);
     });
+
+    const musicInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_URL}/now_playing`);
+        if (res.ok) {
+          setNowPlaying(await res.json());
+        }
+      } catch (e) {}
+    }, 5000);
+
+    return () => clearInterval(musicInterval);
   }, []);
 
   const autoGreet = async (contextData: any) => {
@@ -697,8 +711,30 @@ function App() {
               {reminders.length === 0 && <p className="empty-state">No upcoming meetings or reminders.</p>}
             </ul>
           </div>
-
-
+          {/* Currently Playing Panel */}
+          <div className="section glass-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+            <h2 style={{ alignSelf: 'flex-start' }}>Now Playing</h2>
+            <div style={{
+              width: '120px', height: '120px', borderRadius: '50%', background: 'linear-gradient(135deg, #1db954 0%, #191414 100%)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px',
+              boxShadow: nowPlaying.is_playing ? '0 0 30px rgba(29, 185, 84, 0.4)' : 'none',
+              animation: nowPlaying.is_playing ? 'pulse 2s infinite' : 'none'
+            }}>
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.5 14.5c-.2.33-.63.44-.96.24-2.63-1.6-5.95-1.96-9.84-1.07-.36.08-.72-.14-.8-.5-.08-.36.14-.72.5-.8 4.3-.98 8.04-.57 11.02 1.25.33.2.44.63.24.96zm1.36-3.23c-.25.4-.76.54-1.16.29-3.03-1.87-7.66-2.42-10.8-1.32-.46.16-.95-.08-1.11-.53-.16-.45.08-.95.53-1.11 3.6-1.27 8.7-0.65 12.24 1.52.4.25.54.76.29 1.15zm.13-3.38c-3.64-2.16-9.65-2.36-13.1-1.3-.54.16-1.1-.14-1.26-.68-.16-.54.14-1.1.68-1.26 3.96-1.2 10.64-.96 14.82 1.5.48.28.64.9.36 1.38-.28.48-.9.64-1.38.36z" />
+              </svg>
+            </div>
+            <strong style={{ fontSize: '20px', color: '#fff', marginBottom: '8px' }}>{nowPlaying.title}</strong>
+            <span style={{ fontSize: '14px', color: '#aaa' }}>{nowPlaying.artist || 'Waiting for media...'}</span>
+            
+            <style>{`
+              @keyframes pulse {
+                0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.7); }
+                70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(29, 185, 84, 0); }
+                100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(29, 185, 84, 0); }
+              }
+            `}</style>
+          </div>
 
           {/* Sticky Notes Panel */}
           <div className="section glass-panel sticky-notes-board">
