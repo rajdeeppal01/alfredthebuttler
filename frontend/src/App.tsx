@@ -830,27 +830,13 @@ function App() {
               <SpecularButton onClick={refreshGithubStats} disabled={isSyncing} size="sm" radius={12} tint="#ffffff" tintOpacity={0} blur={0} textColor="#f5f5f5" lineColor="#ffffff" baseColor="#525252" intensity={1} shineSize={10} shineFade={40} thickness={1} speed={0.35} followMouse proximity={250} autoAnimate={false}>{isSyncing ? 'Syncing...' : 'Sync GitHub'}</SpecularButton>
             </div>
           </div>
-          <div style={{ width: '100%', height: '180px', display: 'flex', gap: '20px' }}>
-            <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Contributions Today</span>
-              <span style={{ fontSize: '56px', fontWeight: 'bold', color: '#fff', textShadow: '0 4px 16px rgba(255,255,255,0.2)' }}>
-                {github.find(n => n.type === 'Daily Pushes')?.title || '0'}
-              </span>
-            </div>
-            
-            <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Total Contributions</span>
-              <span style={{ fontSize: '56px', fontWeight: 'bold', color: '#22c55e', textShadow: '0 4px 16px rgba(34, 197, 94, 0.4)' }}>
-                {github.find(n => n.type === 'Total Contributions')?.title || '0'}
-              </span>
-            </div>
-
+          <div style={{ width: '100%', height: '180px', display: 'flex' }}>
             <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 20px' }}>
               <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Latest Push</span>
-              <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>
+              <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#fff', wordBreak: 'break-all', padding: '0 10px' }}>
                 {github.find(n => n.type === 'Latest Push')?.repository || 'None'}
               </span>
-              <span style={{ fontSize: '14px', color: '#aaa', marginTop: '8px', maxWidth: '80%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: '14px', color: '#aaa', marginTop: '12px', maxWidth: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {github.find(n => n.type === 'Latest Push')?.title || 'No recent pushes'}
               </span>
             </div>
