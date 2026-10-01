@@ -54,7 +54,7 @@ async def get_current_media_info():
             }
     except Exception as e:
         pass
-    return {"title": "Lock In", "artist": "Deep work mode...", "thumbnail": "", "is_playing": False}
+    return {"title": "lock in", "artist": "", "thumbnail": "", "is_playing": False}
 
 async def run_bridge():
     print("Music Bridge Started! Monitoring Windows Media...")
