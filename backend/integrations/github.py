@@ -1,6 +1,8 @@
 import os
+import requests
 from github import Github
 from dotenv import load_dotenv
+from datetime import datetime, timedelta, timezone
 
 load_dotenv()
 
@@ -10,28 +12,51 @@ def get_github_notifications():
         return [{"repository": "System", "title": "GitHub PAT Missing", "type": "Error"}]
     
     try:
-        from datetime import datetime, timedelta, timezone
         g = Github(pat)
         user = g.get_user()
         my_username = user.login
         
-        events = g.get_user(my_username).get_events()
+        # 1. Fetch exact daily contributions from GraphQL (this matches the Github profile graph)
+        query = """
+        query($login: String!) {
+          user(login: $login) {
+            contributionsCollection {
+              contributionCalendar {
+                weeks {
+                  contributionDays {
+                    contributionCount
+                    date
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
         
-        results = []
-        ist_timezone = timezone(timedelta(hours=5, minutes=30))
-        today_start = datetime.now(ist_timezone).replace(hour=0, minute=0, second=0, microsecond=0)
+        headers = {"Authorization": f"Bearer {pat}"}
+        variables = {"login": my_username}
+        response = requests.post("https://api.github.com/graphql", json={"query": query, "variables": variables}, headers=headers)
+        
         daily_pushes = 0
+        if response.status_code == 200:
+            data = response.json()
+            weeks = data.get("data", {}).get("user", {}).get("contributionsCollection", {}).get("contributionCalendar", {}).get("weeks", [])
+            ist_timezone = timezone(timedelta(hours=5, minutes=30))
+            today_str = datetime.now(ist_timezone).strftime("%Y-%m-%d")
+            
+            # Find today's contribution count
+            for week in weeks:
+                for day in week.get("contributionDays", []):
+                    if day.get("date") == today_str:
+                        daily_pushes = day.get("contributionCount", 0)
+        
+        # 2. Fetch events to find the most recent push details
+        events = user.get_events()
         latest_push = None
         
         for event in events:
-            event_time = event.created_at.replace(tzinfo=timezone.utc).astimezone(ist_timezone)
-            if event_time >= today_start:
-                if event.type == "PushEvent":
-                    daily_pushes += len(event.payload.get("commits", []))
-                elif event.type in ["PullRequestEvent", "IssuesEvent", "CreateEvent"]:
-                    daily_pushes += 1
-            
-            if event.type == "PushEvent" and not latest_push:
+            if event.type == "PushEvent":
                 commits = event.payload.get("commits", [])
                 msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
                 latest_push = {
@@ -39,12 +64,9 @@ def get_github_notifications():
                     "title": msg,
                     "type": "Latest Push"
                 }
-            
-            # Since events are chronological descending, if we go past today we can't break if we haven't found the latest push, but typically we find it quickly.
-            # We must iterate far enough to count all of today's pushes.
-            if event_time < today_start and latest_push:
                 break
                 
+        results = []
         if latest_push:
             results.append(latest_push)
             
