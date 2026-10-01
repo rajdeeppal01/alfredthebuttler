@@ -4,6 +4,8 @@ import json
 import firebase_admin
 from firebase_admin import credentials, firestore
 from winrt.windows.media.control import GlobalSystemMediaTransportControlsSessionManager
+from winrt.windows.storage.streams import DataReader
+import base64
 import time
 
 # Initialize Firebase (same as main.py)
@@ -31,17 +33,31 @@ async def get_current_media_info():
         if current_session:
             info = await current_session.try_get_media_properties_async()
             status = current_session.get_playback_info().playback_status
+            
+            thumbnail_b64 = ""
+            if info.thumbnail:
+                try:
+                    stream = await info.thumbnail.open_read_async()
+                    reader = DataReader(stream)
+                    await reader.load_async(stream.size)
+                    data = bytearray(stream.size)
+                    reader.read_bytes(data)
+                    thumbnail_b64 = f"data:image/jpeg;base64,{base64.b64encode(data).decode('utf-8')}"
+                except Exception as e:
+                    print(f"Thumbnail error: {e}")
+
             return {
                 "title": info.title,
                 "artist": info.artist,
+                "thumbnail": thumbnail_b64,
                 "is_playing": status == 4 # 4 means playing
             }
     except Exception as e:
         pass
-    return {"title": "Nothing playing", "artist": "", "is_playing": False}
+    return {"title": "Nothing playing", "artist": "", "thumbnail": "", "is_playing": False}
 
 async def run_bridge():
-    print("🎵 Music Bridge Started! Monitoring Windows Media...")
+    print("Music Bridge Started! Monitoring Windows Media...")
     last_state = None
     
     while True:
