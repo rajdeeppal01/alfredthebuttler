@@ -16,13 +16,20 @@ def get_github_notifications():
         user = g.get_user()
         my_username = user.login
         
-        # 1. Fetch exact daily contributions from GraphQL (this matches the Github profile graph)
         query = """
         query($login: String!) {
           user(login: $login) {
-            contributionsCollection {
+            y2026: contributionsCollection(from: "2026-01-01T00:00:00Z", to: "2026-12-31T23:59:59Z") {
+              contributionCalendar { totalContributions }
+            }
+            y2025: contributionsCollection(from: "2025-01-01T00:00:00Z", to: "2025-12-31T23:59:59Z") {
+              contributionCalendar { totalContributions }
+            }
+            y2024: contributionsCollection(from: "2024-01-01T00:00:00Z", to: "2024-12-31T23:59:59Z") {
+              contributionCalendar { totalContributions }
+            }
+            today: contributionsCollection {
               contributionCalendar {
-                totalContributions
                 weeks {
                   contributionDays {
                     contributionCount
@@ -43,8 +50,13 @@ def get_github_notifications():
         total_contributions = 0
         if response.status_code == 200:
             data = response.json()
-            calendar = data.get("data", {}).get("user", {}).get("contributionsCollection", {}).get("contributionCalendar", {})
-            total_contributions = calendar.get("totalContributions", 0)
+            user_data = data.get("data", {}).get("user", {})
+            
+            # Sum all time contributions across recent years
+            for year_key in ["y2024", "y2025", "y2026"]:
+                total_contributions += user_data.get(year_key, {}).get("contributionCalendar", {}).get("totalContributions", 0)
+                
+            calendar = user_data.get("today", {}).get("contributionCalendar", {})
             weeks = calendar.get("weeks", [])
             ist_timezone = timezone(timedelta(hours=5, minutes=30))
             today_str = datetime.now(ist_timezone).strftime("%Y-%m-%d")
@@ -61,9 +73,14 @@ def get_github_notifications():
         
         for event in events:
             if event.type == "PushEvent":
+                repo_name = event.repo.name.split("/")[-1] if event.repo.name else "Unknown"
+                # Skip the dashboard repository and any test 'Abc' repos the user might have made
+                if repo_name.lower() in ["alfredthebuttler", "abc"]:
+                    continue
+                    
                 commits = event.payload.get("commits", [])
                 msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
-                repo_name = event.repo.name.split("/")[-1] if event.repo.name else "Unknown"
+                
                 latest_push = {
                     "repository": repo_name,
                     "title": msg,
