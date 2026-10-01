@@ -698,20 +698,7 @@ function App() {
             </ul>
           </div>
 
-          {/* GitHub Panel */}
-          <div className="section glass-panel">
-            <h2>Latest GitHub Pushes</h2>
-            <ul className="list">
-              {github.map((notif, idx) => (
-                <li key={idx} className="data-item">
-                  <strong>{notif.repository}</strong>
-                  <span className="subtitle">{notif.type}</span>
-                  <p className="snippet">{notif.title}</p>
-                </li>
-              ))}
-              {github.length === 0 && <p className="empty-state">No recent repository activity.</p>}
-            </ul>
-          </div>
+
 
           {/* Sticky Notes Panel */}
           <div className="section glass-panel sticky-notes-board">
