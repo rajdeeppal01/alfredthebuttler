@@ -832,12 +832,9 @@ function App() {
           </div>
           <div style={{ width: '100%', height: '180px', display: 'flex' }}>
             <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 20px' }}>
-              <span style={{ fontSize: '16px', color: '#888', marginBottom: '12px' }}>Latest Push</span>
-              <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#fff', wordBreak: 'break-all', padding: '0 10px' }}>
-                {github.find(n => n.type === 'Latest Push')?.repository || 'None'}
-              </span>
-              <span style={{ fontSize: '14px', color: '#aaa', marginTop: '12px', maxWidth: '90%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {github.find(n => n.type === 'Latest Push')?.title || 'No recent pushes'}
+              <span style={{ fontSize: '18px', color: '#888', marginBottom: '12px' }}>Contributions Today</span>
+              <span style={{ fontSize: '64px', fontWeight: 'bold', color: '#fff', textShadow: '0 4px 16px rgba(255,255,255,0.2)' }}>
+                {github.find(n => n.type === 'Daily Pushes')?.title || '0'}
               </span>
             </div>
           </div>
