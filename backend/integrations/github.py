@@ -18,23 +18,27 @@ def get_github_notifications():
         events = g.get_user(my_username).get_events()
         
         results = []
-        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        ist_timezone = timezone(timedelta(hours=5, minutes=30))
+        today_start = datetime.now(ist_timezone).replace(hour=0, minute=0, second=0, microsecond=0)
         daily_pushes = 0
         latest_push = None
         
         for event in events:
-            event_time = event.created_at.replace(tzinfo=timezone.utc)
-            if event.type == "PushEvent":
-                if event_time >= today_start:
+            event_time = event.created_at.replace(tzinfo=timezone.utc).astimezone(ist_timezone)
+            if event_time >= today_start:
+                if event.type == "PushEvent":
+                    daily_pushes += len(event.payload.get("commits", []))
+                elif event.type in ["PullRequestEvent", "IssuesEvent", "CreateEvent"]:
                     daily_pushes += 1
-                if not latest_push:
-                    commits = event.payload.get("commits", [])
-                    msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
-                    latest_push = {
-                        "repository": event.repo.name,
-                        "title": msg,
-                        "type": "Latest Push"
-                    }
+            
+            if event.type == "PushEvent" and not latest_push:
+                commits = event.payload.get("commits", [])
+                msg = commits[-1].get("message", "Pushed to repository") if commits else "Pushed to repository"
+                latest_push = {
+                    "repository": event.repo.name,
+                    "title": msg,
+                    "type": "Latest Push"
+                }
             
             # Since events are chronological descending, if we go past today we can't break if we haven't found the latest push, but typically we find it quickly.
             # We must iterate far enough to count all of today's pushes.
