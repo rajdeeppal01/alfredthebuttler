@@ -935,9 +935,6 @@ function App() {
               </div>
             </div>
           )}
-          <h1 style={{ fontSize: '48px', color: '#fff', margin: '0 0 10px 0', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>{nowPlaying.title}</h1>
-          <p style={{ fontSize: '24px', color: '#aaa', margin: 0 }}>{nowPlaying.artist}</p>
-          <p style={{ position: 'absolute', bottom: '40px', color: '#555', fontSize: '14px', letterSpacing: '2px' }}>CLICK ANYWHERE TO CLOSE</p>
           
           <style>{`
             @keyframes eqBar {
