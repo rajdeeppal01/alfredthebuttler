@@ -71,7 +71,7 @@ function App() {
   const [streaks, setStreaks] = useState<Streak[]>([]);
   const [stickyNotes, setStickyNotes] = useState<any[]>([]);
   const [nowPlaying, setNowPlaying] = useState<{title: string, artist: string, is_playing: boolean, thumbnail?: string}>({ title: 'lock in', artist: '', is_playing: false, thumbnail: '' });
-
+  const [isFullscreenVisualizer, setIsFullscreenVisualizer] = useState(false);
 
 
   
@@ -655,7 +655,13 @@ function App() {
           </div>
 
           {/* Currently Playing Panel */}
-          <div className="section glass-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+          <div 
+            className="section glass-panel" 
+            style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', cursor: 'pointer', transition: 'transform 0.2s' }}
+            onClick={() => setIsFullscreenVisualizer(true)}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <h2 style={{ alignSelf: 'flex-start' }}>Now Playing</h2>
             
             {nowPlaying.thumbnail ? (
@@ -848,6 +854,99 @@ function App() {
 
       {showPrivacy && <PrivacyPolicy onClose={() => setShowPrivacy(false)} />}
       {showTerms && <TermsConditions onClose={() => setShowTerms(false)} />}
+
+      {/* Fullscreen Music Visualizer */}
+      {isFullscreenVisualizer && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(5, 5, 10, 0.95)',
+            backdropFilter: 'blur(20px)',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            cursor: 'pointer'
+          }}
+          onClick={() => setIsFullscreenVisualizer(false)}
+        >
+          {nowPlaying.thumbnail ? (
+            <div style={{
+              width: '240px', height: '240px', borderRadius: '50%', marginBottom: '40px',
+              backgroundImage: `url(${nowPlaying.thumbnail})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              boxShadow: nowPlaying.is_playing ? '0 0 80px rgba(29, 185, 84, 0.6)' : 'none',
+              border: '6px solid rgba(255,255,255,0.15)',
+              position: 'relative',
+              zIndex: 10
+            }}>
+              {/* Radial Visualizer Bars */}
+              {nowPlaying.is_playing && [...Array(32)].map((_, i) => (
+                <div key={i} style={{
+                  position: 'absolute',
+                  top: '50%', left: '50%',
+                  width: '6px',
+                  height: '40px',
+                  background: 'linear-gradient(to top, #1db954, #4ade80)',
+                  borderRadius: '3px',
+                  transformOrigin: '50% 0',
+                  transform: `translate(-50%, 0) rotate(${i * (360 / 32)}deg) translateY(130px)`,
+                  animation: `eqBar ${0.5 + (i % 3) * 0.2}s ease-in-out infinite alternate`,
+                  animationDelay: `${-i * 0.05}s`
+                }} />
+              ))}
+            </div>
+          ) : (
+            <div style={{
+              width: '240px', height: '240px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(30,30,50,1) 0%, rgba(10,10,20,1) 100%)',
+              display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '40px',
+              boxShadow: nowPlaying.is_playing ? '0 0 80px rgba(99, 102, 241, 0.6)' : 'inset 0 0 40px rgba(0,0,0,0.8)',
+              border: '2px solid rgba(255,255,255,0.05)',
+              position: 'relative',
+              zIndex: 10
+            }}>
+              {/* Radial Visualizer Bars */}
+              {nowPlaying.is_playing && [...Array(32)].map((_, i) => (
+                <div key={i} style={{
+                  position: 'absolute',
+                  top: '50%', left: '50%',
+                  width: '6px',
+                  height: '40px',
+                  background: 'linear-gradient(to top, #6366f1, #a855f7)',
+                  borderRadius: '3px',
+                  transformOrigin: '50% 0',
+                  transform: `translate(-50%, 0) rotate(${i * (360 / 32)}deg) translateY(130px)`,
+                  animation: `eqBar ${0.5 + (i % 3) * 0.2}s ease-in-out infinite alternate`,
+                  animationDelay: `${-i * 0.05}s`
+                }} />
+              ))}
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} style={{
+                    width: '12px', height: '12px', borderRadius: '50%', background: '#6366f1',
+                    boxShadow: '0 0 20px #6366f1, 0 0 40px #8b5cf6',
+                    animation: nowPlaying.is_playing ? `particleWave 1.2s ease-in-out infinite` : 'none',
+                    animationDelay: `${i * 0.15}s`
+                  }} />
+                ))}
+              </div>
+            </div>
+          )}
+          <h1 style={{ fontSize: '48px', color: '#fff', margin: '0 0 10px 0', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>{nowPlaying.title}</h1>
+          <p style={{ fontSize: '24px', color: '#aaa', margin: 0 }}>{nowPlaying.artist}</p>
+          <p style={{ position: 'absolute', bottom: '40px', color: '#555', fontSize: '14px', letterSpacing: '2px' }}>CLICK ANYWHERE TO CLOSE</p>
+          
+          <style>{`
+            @keyframes eqBar {
+              0% { height: 10px; opacity: 0.5; }
+              100% { height: 80px; opacity: 1; }
+            }
+          `}</style>
+        </div>
+      )}
     </>
   );
 }
